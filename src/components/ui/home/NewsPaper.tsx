@@ -1,32 +1,41 @@
-import React from "react";
-import Container from "@/components/share/container";
-import ScrollableImageList from "./e-paper/ScrollableImageList";
-import { newspaperData } from "@/components/newspaperData";
-import MiddleSwiper from "./e-paper/MiddleSwiper";
-export default function NewsPaper() {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import { useState } from "react";
+import { epaperData } from "@/data/epaperData";
+import LeftSidebar from "./e-paper/LeftSidebar";
+import MiddleViewer from "./e-paper/MiddleViewer";
+import RightViewer from "./RightViewer";
+
+export default function EPaperPage() {
+  const [selectedPage, setSelectedPage] = useState(epaperData[0]);
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+
   return (
-    <Container>
-      <div className="grid grid-cols-12 gap-4">
-        {/* Left Column - Scrollable Images */}
-        <div className="col-span-2">
-          <ScrollableImageList data={newspaperData} />
-        </div>
-
-        {/* Middle Column - Swiper Slider */}
-        <div className="col-span-5">
-          <MiddleSwiper />
-          {/* OR for thumbnails version: */}
-          {/* <MiddleSwiperWithThumbs /> */}
-        </div>
-
-        {/* Right Column */}
-        <div className="col-span-5">
-          <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">Side Content</h2>
-            <p>Your side content goes here...</p>
-          </div>
-        </div>
+    <div className="grid grid-cols-12 gap-4 p-4">
+      {/* LEFT */}
+      <div className="col-span-2">
+        <LeftSidebar
+          data={epaperData}
+          onSelect={(page) => {
+            setSelectedPage(page);
+            setSelectedArticle(null);
+          }}
+        />
       </div>
-    </Container>
+
+      {/* MIDDLE */}
+      <div className="col-span-6">
+        <MiddleViewer
+          page={selectedPage}
+          onSelectArticle={setSelectedArticle}
+        />
+      </div>
+
+      {/* RIGHT */}
+      <div className="col-span-4">
+        <RightViewer article={selectedArticle} />
+      </div>
+    </div>
   );
 }
