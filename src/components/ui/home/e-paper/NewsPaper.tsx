@@ -2,9 +2,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Container from "@/components/share/container";
 import { epaperPages } from "@/data/epaperData";
-import LeftThumbnailList from "./e-paper/LeftThumbnailList";
-import MiddleSwiperWithOverlay from "./e-paper/MiddleSwiperWithOverlay";
-import RightArticlePanel from "./e-paper/RightArticlePanel";
+import LeftThumbnailList from "./LeftThumbnailList";
+import MiddleSwiperWithOverlay from "./MiddleSwiperWithOverlay";
+import RightArticlePanel from "./RightArticlePanel";
 
 export default function NewsPaper() {
   const [selectedPage, setSelectedPage] = useState(epaperPages[0]);

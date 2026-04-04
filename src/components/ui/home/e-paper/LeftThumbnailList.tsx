@@ -1,19 +1,23 @@
-// components/e-paper/LeftThumbnailList.jsx
+"use client";
 import React from "react";
 import Image from "next/image";
+import { LeftThumbnailListProps } from "@/types/epaper";
 
 export default function LeftThumbnailList({
   pages,
   selectedPage,
   onPageSelect,
-}) {
+}: LeftThumbnailListProps) {
   return (
     <div className="h-screen overflow-y-auto custom-scrollbar pr-2">
       <div className="space-y-3">
         {pages.map((page) => (
           <div
             key={page.id}
-            onClick={() => onPageSelect(page)}
+            onClick={() => {
+              console.log("Selected page:", page.pageNumber);
+              onPageSelect(page);
+            }}
             className={`
               relative cursor-pointer transition-all duration-300
               ${
@@ -29,9 +33,10 @@ export default function LeftThumbnailList({
               width={150}
               height={200}
               className="w-full h-auto rounded-lg shadow-md"
+              priority={page.id === 1}
             />
             <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-              Page {page.pageNumber}
+              পাতা {page.pageNumber}
             </div>
           </div>
         ))}
@@ -51,6 +56,9 @@ export default function LeftThumbnailList({
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: #888;
           border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #555;
         }
       `}</style>
     </div>
