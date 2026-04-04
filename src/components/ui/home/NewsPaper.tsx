@@ -1,41 +1,74 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+// components/e-paper/NewsPaper.jsx
+import React, { useState, useRef, useEffect } from "react";
+import Container from "@/components/share/container";
+import { epaperPages } from "@/data/epaperData";
+import LeftThumbnailList from "./e-paper/LeftThumbnailList";
+import MiddleSwiperWithOverlay from "./e-paper/MiddleSwiperWithOverlay";
+import RightArticlePanel from "./e-paper/RightArticlePanel";
 
-import { useState } from "react";
-import { epaperData } from "@/data/epaperData";
-import LeftSidebar from "./e-paper/LeftSidebar";
-import MiddleViewer from "./e-paper/MiddleViewer";
-import RightViewer from "./RightViewer";
+export default function NewsPaper() {
+  const [selectedPage, setSelectedPage] = useState(epaperPages[0]);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const swiperRef = useRef(null);
 
-export default function EPaperPage() {
-  const [selectedPage, setSelectedPage] = useState(epaperData[0]);
-  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  // Handle page change from left thumbnail
+  const handlePageChange = (page) => {
+    setSelectedPage(page);
+    setSelectedArticle(null);
+
+    // Sync swiper if needed
+    if (swiperRef.current) {
+      const pageIndex = epaperPages.findIndex((p) => p.id === page.id);
+      swiperRef.current.slideTo(pageIndex);
+    }
+  };
+
+  // Handle article click from middle overlay
+  const handleArticleClick = (article) => {
+    setSelectedArticle(article);
+  };
+
+  // Handle swiper slide change
+  const handleSlideChange = (swiper) => {
+    const page = epaperPages[swiper.activeIndex];
+    if (page) {
+      setSelectedPage(page);
+      setSelectedArticle(null);
+    }
+  };
 
   return (
-    <div className="grid grid-cols-12 gap-4 p-4">
-      {/* LEFT */}
-      <div className="col-span-2">
-        <LeftSidebar
-          data={epaperData}
-          onSelect={(page) => {
-            setSelectedPage(page);
-            setSelectedArticle(null);
-          }}
-        />
-      </div>
+    <Container>
+      <div className="grid grid-cols-12 gap-6">
+        {/* LEFT COLUMN - Thumbnail List */}
+        <div className="col-span-2">
+          <LeftThumbnailList
+            pages={epaperPages}
+            selectedPage={selectedPage}
+            onPageSelect={handlePageChange}
+          />
+        </div>
 
-      {/* MIDDLE */}
-      <div className="col-span-6">
-        <MiddleViewer
-          page={selectedPage}
-          onSelectArticle={setSelectedArticle}
-        />
-      </div>
+        {/* MIDDLE COLUMN - Main Viewer with Clickable Overlay */}
+        <div className="col-span-7">
+          <MiddleSwiperWithOverlay
+            pages={epaperPages}
+            selectedPage={selectedPage}
+            onArticleClick={handleArticleClick}
+            onSlideChange={handleSlideChange}
+            swiperRef={swiperRef}
+          />
+        </div>
 
-      {/* RIGHT */}
-      <div className="col-span-4">
-        <RightViewer article={selectedArticle} />
+        {/* RIGHT COLUMN - Article Details */}
+        <div className="col-span-3">
+          <RightArticlePanel
+            selectedArticle={selectedArticle}
+            selectedPage={selectedPage}
+          />
+        </div>
       </div>
-    </div>
+    </Container>
   );
 }
