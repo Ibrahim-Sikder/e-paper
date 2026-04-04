@@ -1,12 +1,25 @@
+// components/e-paper/RightArticlePanel.tsx
 "use client";
-
-import { RightArticlePanelProps } from "@/types/epaper";
+import React from "react";
 import Image from "next/image";
+
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  articleImage?: string;
+}
+
+interface Props {
+  selectedArticle: Article | null;
+  selectedPage: { pageNumber: number };
+}
 
 export default function RightArticlePanel({
   selectedArticle,
   selectedPage,
-}: RightArticlePanelProps) {
+}: Props) {
   if (!selectedArticle) {
     return (
       <div className="bg-gray-50 rounded-xl p-6 shadow-lg sticky top-4">
@@ -40,10 +53,11 @@ export default function RightArticlePanel({
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-4">
-      {selectedArticle.image && (
-        <div className="relative w-full h-48 bg-gray-100">
+      {/* আর্টিকেলের নিজস্ব ছবি */}
+      {selectedArticle.articleImage && (
+        <div className="relative w-full h-56 bg-gray-100">
           <Image
-            src={selectedArticle.image}
+            src={selectedArticle.articleImage}
             alt={selectedArticle.title}
             fill
             className="object-cover"
@@ -51,30 +65,35 @@ export default function RightArticlePanel({
         </div>
       )}
 
+      {/* ক্যাটাগরি ব্যাজ */}
       <div className="px-5 pt-4">
         <span className="inline-block bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-medium">
           {selectedArticle.category}
         </span>
       </div>
 
+      {/* টাইটেল */}
       <div className="px-5 pt-3">
         <h2 className="text-xl font-bold text-gray-900 leading-tight">
           {selectedArticle.title}
         </h2>
       </div>
 
+      {/* কন্টেন্ট */}
       <div className="px-5 py-4">
         <p className="text-gray-700 leading-relaxed">
           {selectedArticle.content}
         </p>
       </div>
 
+      {/* রিড মোর বাটন */}
       <div className="px-5 pb-5">
         <button className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
           বিস্তারিত পড়ুন →
         </button>
       </div>
 
+      {/* শেয়ার বাটন */}
       <div className="border-t border-gray-100 px-5 py-4">
         <p className="text-sm text-gray-500 mb-2">শেয়ার করুন</p>
         <div className="flex gap-2">
