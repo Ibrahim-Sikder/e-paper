@@ -2,11 +2,12 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { epaperPages } from "@/data/epaperData";
-import LeftThumbnailList from "./LeftThumbnailList";
-import MiddleSwiperWithOverlay from "./MiddleSwiperWithOverlay";
-import RightArticlePanel from "./RightArticlePanel";
+
 import { useParams } from "next/navigation";
 import { useEpaperData } from "@/hooks/useEpaperData";
+import LeftThumbnailList from "@/components/ui/home/e-paper/LeftThumbnailList";
+import MiddleSwiperWithOverlay from "@/components/ui/home/e-paper/MiddleSwiperWithOverlay";
+import RightArticlePanel from "@/components/ui/home/e-paper/RightArticlePanel";
 
 export default function NewsPaper() {
   const [selectedPage, setSelectedPage] = useState(epaperPages[0]);
@@ -18,7 +19,7 @@ export default function NewsPaper() {
 
   // Use the hook to fetch data
   const { data, loading, error } = useEpaperData(date);
-  console.log("Fetched e-paper data:", data);
+  console.log("Fetched E-paper Data:", data);
   const handlePageChange = (page: any) => {
     setSelectedPage(page);
     setSelectedArticle(null);

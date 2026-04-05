@@ -9,67 +9,72 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// 🔥 তোমার ইমেজের আসল সাইজ (ImageSizeChecker থেকে পাওয়া)
-const ORIGINAL_WIDTH = 1200;
-const ORIGINAL_HEIGHT = 1800;
+// 🔥 এখানে CheckImageSize থেকে পাওয়া সাইজ বসাও
+const ORIGINAL_WIDTH = 800; // তোমার ইমেজের আসল width
+const ORIGINAL_HEIGHT = 1100; // তোমার ইমেজের আসল height
+
+interface Article {
+  id: string;
+  title: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  articleImage: string;
+}
+
+interface Props {
+  pages: any[];
+  onArticleClick: (article: Article) => void;
+  onSlideChange: (swiper: any) => void;
+  swiperRef: React.MutableRefObject<any>;
+}
 
 export default function MiddleSwiperWithOverlay({
   pages,
   onArticleClick,
   onSlideChange,
   swiperRef,
-}: any) {
+}: Props) {
   const [hoveredArticle, setHoveredArticle] = useState<string | null>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [isImageReady, setIsImageReady] = useState(false);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [isReady, setIsReady] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
 
+  // ইমেজের বর্তমান সাইজ আপডেট
+  const updateSize = useCallback(() => {
+    if (imageRef.current && isReady) {
+      const rect = imageRef.current.getBoundingClientRect();
+      setImageSize({ width: rect.width, height: rect.height });
+    }
+  }, [isReady]);
+
   useEffect(() => {
-    const updateDimensions = () => {
-      if (imageRef.current && isImageReady) {
-        const rect = imageRef.current.getBoundingClientRect();
-        setDimensions({ width: rect.width, height: rect.height });
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("📐 SCALE CALCULATION:");
-        console.log(`Original: ${ORIGINAL_WIDTH}x${ORIGINAL_HEIGHT}`);
-        console.log(
-          `Rendered: ${Math.round(rect.width)}x${Math.round(rect.height)}`,
-        );
-        console.log(`Scale: ${(rect.width / ORIGINAL_WIDTH).toFixed(3)}`);
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      }
-    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, [updateSize]);
 
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, [isImageReady]);
-
-  const getScaledPosition = useCallback(
-    (article: any) => {
-      if (dimensions.width === 0 || !isImageReady) {
+  // স্কেল করা পজিশন বের করার ফাংশন
+  const getPosition = useCallback(
+    (article: Article) => {
+      if (imageSize.width === 0 || !isReady) {
         return { left: 0, top: 0, width: 0, height: 0 };
       }
-      const scale = dimensions.width / ORIGINAL_WIDTH;
+      const scaleX = imageSize.width / ORIGINAL_WIDTH;
+      const scaleY = imageSize.height / ORIGINAL_HEIGHT;
       return {
-        left: article.x * scale,
-        top: article.y * scale,
-        width: article.width * scale,
-        height: article.height * scale,
+        left: article.x * scaleX,
+        top: article.y * scaleY,
+        width: article.width * scaleX,
+        height: article.height * scaleY,
       };
     },
-    [dimensions, isImageReady],
+    [imageSize, isReady],
   );
 
   return (
     <div className="relative">
-      {/* ডিবাগ প্যানেল */}
-      <div className="absolute top-2 right-2 z-30 bg-black bg-opacity-80 text-white text-[10px] p-2 rounded shadow-lg">
-        <div>Scale: {(dimensions.width / ORIGINAL_WIDTH).toFixed(3)}x</div>
-        <div>Articles: {pages[0]?.articles?.length || 0}</div>
-        <div>Ready: {isImageReady ? "✅" : "❌"}</div>
-      </div>
-
       <Swiper
         modules={[Navigation, Pagination]}
         navigation
@@ -80,77 +85,58 @@ export default function MiddleSwiperWithOverlay({
         onSlideChange={onSlideChange}
         spaceBetween={20}
         slidesPerView={1}
-        className="rounded-xl overflow-hidden"
+        className="rounded-xl overflow-hidden shadow-lg"
       >
-        {pages.map((page: any) => (
+        {pages.map((page) => (
           <SwiperSlide key={page.id}>
-            <div className="relative w-full bg-gray-100 rounded-xl overflow-hidden">
-              <div className="relative">
-                <Image
-                  ref={imageRef as any}
-                  src={page.image}
-                  alt={`Page ${page.pageNumber}`}
-                  width={ORIGINAL_WIDTH}
-                  height={ORIGINAL_HEIGHT}
-                  className="w-full h-auto"
-                  priority={page.id === 1}
-                  onLoad={() => {
-                    console.log("✅ Image loaded");
-                    setIsImageReady(true);
-                    setTimeout(() => {
-                      if (imageRef.current) {
-                        const rect = imageRef.current.getBoundingClientRect();
-                        setDimensions({
-                          width: rect.width,
-                          height: rect.height,
-                        });
-                      }
-                    }, 100);
-                  }}
-                />
+            <div className="relative w-full bg-gray-100">
+              {/* মূল ইমেজ */}
+              <Image
+                ref={imageRef as any}
+                src={page.image}
+                alt={`Page ${page.pageNumber}`}
+                className="w-full h-auto"
+                priority={page.id === 1}
+                onLoad={() => {
+                  setIsReady(true);
+                  setTimeout(updateSize, 100);
+                }}
+              />
 
-                {/* ক্লিকেবল এরিয়াস - লাল বক্স */}
-                {isImageReady &&
-                  page.articles?.map((article: any, idx: number) => {
-                    const pos = getScaledPosition(article);
-                    if (pos.width === 0 || pos.height === 0) return null;
+              {/* ইনভিজিবল ক্লিকেবল এরিয়াস - সম্পূর্ণ স্বচ্ছ */}
+              {isReady &&
+                page.articles?.map((article: Article, idx: number) => {
+                  const pos = getPosition(article);
+                  if (pos.width === 0) return null;
 
-                    return (
-                      <div
-                        key={article.id}
-                        onClick={() => {
-                          console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-                          console.log("✅ CLICKED:", article.title);
-                          console.log(`   Position: (${pos.left}, ${pos.top})`);
-                          console.log(`   Size: ${pos.width}x${pos.height}`);
-                          console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-                          onArticleClick(article);
-                        }}
-                        onMouseEnter={() => setHoveredArticle(article.id)}
-                        onMouseLeave={() => setHoveredArticle(null)}
-                        className="absolute cursor-pointer transition-all duration-200"
-                        style={{
-                          left: `${pos.left}px`,
-                          top: `${pos.top}px`,
-                          width: `${pos.width}px`,
-                          height: `${pos.height}px`,
-                          backgroundColor: "rgba(255, 0, 0, 0.25)",
-                          border: "2px solid red",
-                          zIndex: 10,
-                        }}
-                      >
-                        <div className="absolute top-0 left-0 bg-red-600 text-white text-[9px] px-1 rounded-br font-bold">
-                          #{idx + 1}
+                  return (
+                    <div
+                      key={article.id}
+                      onClick={() => {
+                        onArticleClick(article);
+                      }}
+                      onMouseEnter={() => setHoveredArticle(article.id)}
+                      onMouseLeave={() => setHoveredArticle(null)}
+                      className="absolute cursor-pointer"
+                      style={{
+                        left: `${pos.left}px`,
+                        top: `${pos.top}px`,
+                        width: `${pos.width}px`,
+                        height: `${pos.height}px`,
+                        // 🔥 সম্পূর্ণ স্বচ্ছ - Kalbela-এর মতো
+                        backgroundColor: "transparent",
+                        zIndex: 10,
+                      }}
+                    >
+                      {/* হোভার করলে শুধু টুলটিপ দেখাবে */}
+                      {hoveredArticle === article.id && (
+                        <div className="absolute -top-8 left-0 bg-black bg-opacity-75 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap z-20 shadow-lg transition-all duration-200">
+                          📰 {article.title}
                         </div>
-                        {hoveredArticle === article.id && (
-                          <div className="absolute -top-7 left-0 bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded whitespace-nowrap z-20 shadow-lg">
-                            📰 {article.title.substring(0, 35)}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </SwiperSlide>
         ))}
@@ -168,14 +154,20 @@ export default function MiddleSwiperWithOverlay({
         :global(.swiper-button-next),
         :global(.swiper-button-prev) {
           color: white !important;
-          background: rgba(0, 0, 0, 0.5);
-          width: 36px;
-          height: 36px;
+          background: rgba(0, 0, 0, 0.4);
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
+          backdrop-filter: blur(4px);
+          transition: all 0.3s ease;
+        }
+        :global(.swiper-button-next:hover),
+        :global(.swiper-button-prev:hover) {
+          background: rgba(0, 0, 0, 0.7);
         }
         :global(.swiper-button-next:after),
         :global(.swiper-button-prev:after) {
-          font-size: 16px;
+          font-size: 18px;
         }
       `}</style>
     </div>

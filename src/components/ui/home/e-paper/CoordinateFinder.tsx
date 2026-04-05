@@ -37,10 +37,6 @@ export default function CoordinateFinder() {
       const naturalWidth = imageRef.current.naturalWidth;
       const naturalHeight = imageRef.current.naturalHeight;
       setImageNaturalSize({ width: naturalWidth, height: naturalHeight });
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      console.log("📷 Image Natural Size:", naturalWidth, "x", naturalHeight);
-      console.log("✅ Use these values in MiddleSwiperWithOverlay");
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     }
   };
 
@@ -119,30 +115,8 @@ export default function CoordinateFinder() {
   };
 
   const copyCoordinates = () => {
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("📋 COPY THESE COORDINATES TO epaperData.ts");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log(
-      `// Image Size: ${imageNaturalSize.width}x${imageNaturalSize.height}`,
-    );
-    console.log("");
-    console.log("articles: [");
+    boxes.forEach((box, idx) => {});
 
-    boxes.forEach((box, idx) => {
-      console.log(`  {
-    id: "a${idx + 1}",
-    title: "${box.title}",
-    x: ${box.x},
-    y: ${box.y},
-    width: ${box.width},
-    height: ${box.height},
-    content: "${box.content.replace(/"/g, '\\"')}",
-    category: "জাতীয়",
-  },`);
-    });
-
-    console.log("]");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     alert(
       `✅ ${boxes.length} articles copied to console!\n\nPress F12 and copy the coordinates!`,
     );

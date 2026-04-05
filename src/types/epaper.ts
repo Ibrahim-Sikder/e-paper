@@ -1,3 +1,4 @@
+// types/epaper.ts
 export interface Article {
   id: string;
   title: string;
@@ -5,18 +6,13 @@ export interface Article {
   y: number;
   width: number;
   height: number;
-  content: string;
-  category: string;
-  articleImage?: string;
-  reporter?: string;
-  publishTime?: string;
+  articleImage: string; // আর্টিকেলের ছবি (ePaper এর অংশ)
 }
 
 export interface EpaperPage {
   id: number;
   pageNumber: number;
-  pageTitle?: string;
-  image: any;
-  thumbnail: any;
+  image: any; // পুরো পৃষ্ঠার ছবি
+  thumbnail: any; // থাম্বনেইল ছবি
   articles: Article[];
 }

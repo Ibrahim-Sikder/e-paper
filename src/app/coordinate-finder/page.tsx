@@ -2,7 +2,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import page1Original from "@/assets/epaper/original/page11.webp";
+import page1Original from "@/assets/epaper/original/epaper.jpg";
 
 interface Box {
   id: number;
@@ -33,14 +33,6 @@ export default function CoordinateFinder() {
         width: imageRef.current.naturalWidth,
         height: imageRef.current.naturalHeight,
       });
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-      console.log(
-        "✅ Image Natural Size:",
-        imageRef.current.naturalWidth,
-        "x",
-        imageRef.current.naturalHeight,
-      );
-      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     }
   };
 
@@ -130,31 +122,7 @@ export default function CoordinateFinder() {
 
   // কো-অর্ডিনেট কপি
   const copyCoordinates = () => {
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("📋 COPY THIS ENTIRE BLOCK TO epaperData.ts");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log(`// Image Size: ${imageSize.width}x${imageSize.height}`);
-    console.log("");
-    console.log("articles: [");
-
-    boxes.forEach((box, idx) => {
-      console.log(`  {
-    id: "a${idx + 1}",
-    title: "${box.title}",
-    x: ${box.x},
-    y: ${box.y},
-    width: ${box.width},
-    height: ${box.height},
-    content: "${box.content.replace(/"/g, '\\"')}",
-    category: "জাতীয়",
-  },`);
-    });
-
-    console.log("]");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    alert(
-      `✅ ${boxes.length} articles copied to console!\n\nPress F12 and copy the coordinates!`,
-    );
+    boxes.forEach((box, idx) => {});
   };
 
   const clearAll = () => {

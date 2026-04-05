@@ -3,7 +3,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import page1Original from "@/assets/epaper/original/page11.webp";
+import page1Original from "@/assets/epaper/original/epaper.jpg";
 
 export default function TestPage() {
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -31,11 +31,6 @@ export default function TestPage() {
               width: imageRef.current.naturalWidth,
               height: imageRef.current.naturalHeight,
             });
-            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            console.log("📷 YOUR IMAGE ACTUAL SIZE:");
-            console.log(`Width: ${imageRef.current.naturalWidth}px`);
-            console.log(`Height: ${imageRef.current.naturalHeight}px`);
-            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
           }
         }}
       />
