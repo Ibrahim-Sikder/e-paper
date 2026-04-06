@@ -1,6 +1,6 @@
 "use client";
 
-import NewsPaper from "@/components/ui/home/NewsPaper";
+import NewsPaper from "@/components/ui/home/e-paper/NewsPaper";
 import NewsTopBar from "@/components/ui/home/NewsTopBar";
 export default function NewspaperViewer() {
   return (
