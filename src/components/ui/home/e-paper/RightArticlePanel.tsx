@@ -1,4 +1,4 @@
-// components/e-paper/RightArticlePanel.tsx
+// components/epaper/RightArticlePanel.tsx
 "use client";
 import React from "react";
 import Image from "next/image";
@@ -6,12 +6,14 @@ import Image from "next/image";
 interface Article {
   id: string;
   title: string;
-  articleImage: any; // StaticImageData টাইপ
+  content?: string;
+  category?: string;
+  articleImage: string;
 }
 
 interface Props {
   selectedArticle: Article | null;
-  selectedPage: { pageNumber: number };
+  selectedPage: { pageNumber: number } | null;
 }
 
 export default function RightArticlePanel({
@@ -37,7 +39,7 @@ export default function RightArticlePanel({
               />
             </svg>
           </div>
-          <p className="text-gray-500">নিউজ সিলেক্ট করুন</p>
+          <p className="text-gray-500 font-medium">নিউজ সিলেক্ট করুন</p>
           <p className="text-gray-400 text-sm mt-1">
             পৃষ্ঠার যেকোনো জায়গায় ক্লিক করুন
           </p>
@@ -46,19 +48,53 @@ export default function RightArticlePanel({
     );
   }
 
+  // HTML content নাকি plain text — দুটোই handle করুন
+  const isHtml = selectedArticle.content?.trim().startsWith("<");
+
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-4">
-      <div className="relative bg-gray-100">
-        <Image
-          src={selectedArticle.articleImage}
-          alt={selectedArticle.title}
-          className="w-full h-auto"
-          priority
-        />
-      </div>
-      <div className="p-4 border-t border-gray-100">
-        <h3 className="font-medium text-gray-800">{selectedArticle.title}</h3>
-        <p className="text-xs text-gray-400 mt-1">ই-পেপার থেকে সংগৃহীত</p>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-4 max-h-[90vh] flex flex-col">
+      {/* Article Image */}
+      {selectedArticle.articleImage && (
+        <div className="relative bg-gray-100 flex-shrink-0">
+          <Image
+            src={selectedArticle.articleImage}
+            alt={selectedArticle.title}
+            width={600}
+            height={400}
+            className="w-full h-auto max-h-56 object-cover"
+            unoptimized
+            priority
+          />
+        </div>
+      )}
+
+      {/* Scrollable Content */}
+      <div className="p-4 overflow-y-auto flex-1">
+        {selectedArticle.category && (
+          <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full mb-2">
+            {selectedArticle.category}
+          </span>
+        )}
+
+        <h3 className="font-bold text-gray-800 text-base leading-snug mb-3">
+          {selectedArticle.title}
+        </h3>
+
+        {selectedArticle.content &&
+          (isHtml ? (
+            <div
+              className="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+            />
+          ) : (
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {selectedArticle.content}
+            </p>
+          ))}
+
+        <p className="text-xs text-gray-400 mt-4 pt-3 border-t border-gray-100">
+          📄 পৃষ্ঠা {selectedPage?.pageNumber} • ই-পেপার থেকে সংগৃহীত
+        </p>
       </div>
     </div>
   );
