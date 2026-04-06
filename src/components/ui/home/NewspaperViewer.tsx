@@ -1,7 +1,7 @@
 // components/epaper/NewspaperViewer.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import NewsTopBar from "./NewsTopBar";
 import { useEpaperData, EpaperPage } from "@/hooks/useEpaperData";
 import LeftThumbnailList from "./e-paper/LeftThumbnailList";
@@ -20,12 +20,21 @@ export default function NewspaperViewer() {
   const pages = data?.pages || [];
   const activePage = pages[activeIndex] || null;
 
+  // ✅ FIX 1: Data load হলে বা page change হলে প্রথম article auto-select
+  useEffect(() => {
+    if (activePage && activePage.articles && activePage.articles.length > 0) {
+      setSelectedArticle(activePage.articles[0]);
+    } else {
+      setSelectedArticle(null);
+    }
+  }, [activeIndex, activePage?.id]); // activeIndex বা page id change হলে
+
   const handlePageSelect = useCallback(
     (page: EpaperPage) => {
       const index = pages.findIndex((p) => p.id === page.id);
       if (index === -1) return;
       setActiveIndex(index);
-      setSelectedArticle(null);
+      // ✅ article clear করি না — useEffect auto-set করবে
       if (swiperRef.current) swiperRef.current.slideTo(index);
     },
     [pages],
@@ -36,7 +45,7 @@ export default function NewspaperViewer() {
       const index = pageNumber - 1;
       if (index < 0 || index >= pages.length) return;
       setActiveIndex(index);
-      setSelectedArticle(null);
+      // ✅ article clear করি না — useEffect auto-set করবে
       if (swiperRef.current) swiperRef.current.slideTo(index);
     },
     [pages],
@@ -44,26 +53,27 @@ export default function NewspaperViewer() {
 
   const handleSlideChange = useCallback((swiper: any) => {
     setActiveIndex(swiper.activeIndex);
-    setSelectedArticle(null);
+    // ✅ article clear করি না — useEffect auto-set করবে
   }, []);
 
-  // ✅ FIX: viewMode change হলে selectedArticle clear করি না,
-  // কিন্তু text mode এ RightArticlePanel এ page articles দেখাব
+  // ✅ FIX 2: View mode change করলে selectedArticle CLEAR হবে না
   const handleViewModeChange = useCallback(
     (mode: "image" | "text" | "fullpage") => {
       setViewMode(mode);
-      // text mode এ article selection clear করি যাতে page content দেখায়
-      if (mode === "text") {
-        setSelectedArticle(null);
-      }
+      // setSelectedArticle করি না — same article থাকবে
     },
     [],
   );
 
+  // ✅ FIX 3: Article click করলে set হয়, view mode change এ clear হয় না
+  const handleArticleClick = useCallback((article: any) => {
+    setSelectedArticle(article);
+  }, []);
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="h-12 bg-gray-200 animate-pulse rounded mb-4" />
+        <div className="h-10 bg-gray-200 animate-pulse rounded mb-4" />
         <div className="grid grid-cols-12 gap-5">
           <div className="col-span-2 space-y-3">
             {[1, 2, 3].map((i) => (
@@ -118,7 +128,7 @@ export default function NewspaperViewer() {
         onViewModeChange={handleViewModeChange}
       />
 
-      {/* Full Page View Modal */}
+      {/* Full Page Modal */}
       {viewMode === "fullpage" && activePage && (
         <FullPageModal page={activePage} onClose={() => setViewMode("image")} />
       )}
@@ -143,23 +153,18 @@ export default function NewspaperViewer() {
             />
           </div>
 
-          {/* ✅ FIX: Middle — text mode এ সবসময় image/swiper দেখাব,
-              text content শুধু RightArticlePanel এ যাবে */}
+          {/* Middle — সবসময় image/swiper, কোনো view mode এই change হয় না */}
           <div className="col-span-5">
             <MiddleSwiperWithOverlay
               pages={pages}
               initialIndex={activeIndex}
-              onArticleClick={(article) => {
-                setSelectedArticle(article);
-                // image mode এ click করলে text mode এ switch করি না
-              }}
+              onArticleClick={handleArticleClick}
               onSlideChange={handleSlideChange}
               swiperRef={swiperRef}
             />
           </div>
 
-          {/* ✅ FIX: Right panel — text mode এ page articles দেখাবে,
-              image mode এ selected article দেখাবে */}
+          {/* Right — selected article দেখাবে, viewMode অনুযায়ী style */}
           <div className="col-span-5">
             <RightArticlePanel
               selectedArticle={selectedArticle}
@@ -173,7 +178,6 @@ export default function NewspaperViewer() {
   );
 }
 
-// ── Full Page Modal ──────────────────────────────────────
 function FullPageModal({
   page,
   onClose,

@@ -9,6 +9,7 @@ export interface EpaperPage {
   thumbnail: string;
   epaperDate: string;
   epaperTitle: string;
+  edition?: string;
   articles: {
     id: string;
     title: string;
@@ -27,7 +28,12 @@ export interface EpaperData {
   meta: { total: number; date: string; title: string };
 }
 
-export function useEpaperData() {
+export interface EpaperFilter {
+  date?: string;
+  edition?: string;
+}
+
+export function useEpaperData(filter?: EpaperFilter) {
   const [data, setData] = useState<EpaperData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,17 +43,28 @@ export function useEpaperData() {
       try {
         setLoading(true);
         setError(null);
+
         const baseUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
-        const response = await fetch(`${baseUrl}/epaper`);
-        if (!response.ok) throw new Error("Failed to fetch");
+        const params = new URLSearchParams();
+        if (filter?.date) params.set("date", filter.date);
+        if (filter?.edition) params.set("edition", filter.edition);
+
+        const queryString = params.toString();
+        const url = `${baseUrl}/epaper${queryString ? `?${queryString}` : ""}`;
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch epaper data");
+
         const result = await response.json();
         const epapers: any[] = result?.data?.epapers || [];
+
         if (!epapers.length) {
           setData(null);
           return;
         }
 
         const allPages: EpaperPage[] = [];
+
         epapers.forEach((epaper) => {
           epaper.pages?.forEach((page: any) => {
             allPages.push({
@@ -57,6 +74,7 @@ export function useEpaperData() {
               thumbnail: page.thumbnail,
               epaperDate: epaper.date,
               epaperTitle: epaper.title,
+              edition: epaper.edition || "", // ✅
               articles:
                 page.articles?.map((a: any) => ({
                   id: a.id,
@@ -82,13 +100,14 @@ export function useEpaperData() {
           },
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error");
+        setError(err instanceof Error ? err.message : "Error fetching data");
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, []);
+  }, [filter?.date, filter?.edition]);
 
   return { data, loading, error };
 }
