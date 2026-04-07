@@ -3,15 +3,16 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import NewsTopBar from "./NewsTopBar";
+
 import {
   useEpaperData,
   useAvailableDates,
   EpaperPage,
 } from "@/hooks/useEpaperData";
-import LeftThumbnailList from "./e-paper/LeftThumbnailList";
-import MiddleSwiperWithOverlay from "./e-paper/MiddleSwiperWithOverlay";
-import RightArticlePanel from "./e-paper/RightArticlePanel";
+import LeftThumbnailList from "./LeftThumbnailList";
+import MiddleSwiperWithOverlay from "./MiddleSwiperWithOverlay";
+import RightArticlePanel from "./RightArticlePanel";
+import NewsTopBar from "./NewsTopBar";
 
 export default function NewspaperViewer() {
   const router = useRouter();
@@ -136,7 +137,6 @@ export default function NewspaperViewer() {
   if (loading) {
     return (
       <>
-        {/* TopBar always visible */}
         <NewsTopBar
           pages={[]}
           activeIndex={0}

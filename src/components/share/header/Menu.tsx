@@ -1,3 +1,5 @@
+import { Archive, Languages, Newspaper, ThumbsUp } from "lucide-react";
+
 export const megaMenuColumns = [
   ["সর্বশেষ", "বাণিজ্য", "প্রবাস", "নারী-শিশু"],
   ["জাতীয়", "চাকরি", "লাইফ স্টাইল", "সোশ্যাল মিডিয়া"],
@@ -141,3 +143,49 @@ export const categorySlugMap: Record<string, string> = {
   ফটোগ্যালারি: "photo-gallery",
   "ভিডিও গ্যালারি": "video-gallery",
 };
+export const topNavLinks = [
+  {
+    label: "অনলাইন",
+    icon: (
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold">
+        ক
+      </span>
+    ),
+    href: "/",
+    highlight: true,
+  },
+  {
+    label: "আজকের পত্রিকা",
+    icon: <Newspaper size={15} className="text-gray-600" />,
+    href: "/epaper",
+  },
+  {
+    label: "আর্কাইভ",
+    icon: <Archive size={15} className="text-gray-600" />,
+    href: "/archive",
+  },
+  {
+    label: "সোশ্যাল মিডিয়া",
+    icon: <ThumbsUp size={15} className="text-gray-600" />,
+    href: `/${categorySlugMap["সোশ্যাল মিডিয়া"]}`,
+  },
+  {
+    label: "বাংলা কনভার্টার",
+    icon: <Languages size={15} className="text-gray-600" />,
+    href: "/converter",
+  },
+];
+
+export const mainNavLinks = [
+  "সর্বশেষ",
+  "জাতীয়",
+  "রাজনীতি",
+  "সারাদেশ",
+  "বিশ্ব",
+  "বিনোদন",
+  "খেলা",
+  "বাণিজ্য",
+  "চাকরি",
+  "মতামত",
+  "ভিডিও",
+];

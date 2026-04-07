@@ -13,7 +13,13 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { categorySlugMap, mediaLinks, megaMenuColumns } from "./Menu";
+import {
+  categorySlugMap,
+  mainNavLinks,
+  mediaLinks,
+  megaMenuColumns,
+  topNavLinks,
+} from "./Menu";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -21,54 +27,6 @@ export default function Header() {
   const megaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const topNavLinks = [
-    {
-      label: "অনলাইন",
-      icon: (
-        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold">
-          ক
-        </span>
-      ),
-      href: "/",
-      highlight: true,
-    },
-    {
-      label: "আজকের পত্রিকা",
-      icon: <Newspaper size={15} className="text-gray-600" />,
-      href: "/epaper",
-    },
-    {
-      label: "আর্কাইভ",
-      icon: <Archive size={15} className="text-gray-600" />,
-      href: "/archive",
-    },
-    {
-      label: "সোশ্যাল মিডিয়া",
-      icon: <ThumbsUp size={15} className="text-gray-600" />,
-      href: `/${categorySlugMap["সোশ্যাল মিডিয়া"]}`,
-    },
-    {
-      label: "বাংলা কনভার্টার",
-      icon: <Languages size={15} className="text-gray-600" />,
-      href: "/converter",
-    },
-  ];
-
-  const mainNavLinks = [
-    "সর্বশেষ",
-    "জাতীয়",
-    "রাজনীতি",
-    "সারাদেশ",
-    "বিশ্ব",
-    "বিনোদন",
-    "খেলা",
-    "বাণিজ্য",
-    "চাকরি",
-    "মতামত",
-    "ভিডিও",
-  ];
-
-  // Close mega menu on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (megaRef.current && !megaRef.current.contains(e.target as Node)) {
@@ -179,7 +137,6 @@ export default function Header() {
 
           <div className="h-5 w-px bg-gray-300 mr-5" />
 
-          {/* Main Nav Links */}
           <nav className="flex items-center gap-x-4 flex-1 overflow-x-auto scrollbar-none">
             {mainNavLinks.map((label, i) => {
               const slug = categorySlugMap[label] || label.toLowerCase();
@@ -200,7 +157,7 @@ export default function Header() {
             })}
           </nav>
 
-          {/* Hamburger / Mega Menu Trigger */}
+          {/* Hamburger */}
           <div className="relative ml-4 " ref={megaRef}>
             <button
               className="text-gray-700 hover:text-red-600 transition-colors cursor-pointer"
