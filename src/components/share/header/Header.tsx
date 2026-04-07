@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
 
 import {
@@ -8,11 +9,17 @@ import {
   Newspaper,
   Search,
   ThumbsUp,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { categorySlugMap, mediaLinks, megaMenuColumns } from "./Menu";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const megaRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const topNavLinks = [
     {
@@ -22,105 +29,125 @@ export default function Header() {
           ক
         </span>
       ),
-      href: "#",
+      href: "/",
       highlight: true,
     },
     {
       label: "আজকের পত্রিকা",
       icon: <Newspaper size={15} className="text-gray-600" />,
-      href: "#",
+      href: "/epaper",
     },
     {
       label: "আর্কাইভ",
       icon: <Archive size={15} className="text-gray-600" />,
-      href: "#",
+      href: "/archive",
     },
     {
       label: "সোশ্যাল মিডিয়া",
       icon: <ThumbsUp size={15} className="text-gray-600" />,
-      href: "#",
+      href: `/${categorySlugMap["সোশ্যাল মিডিয়া"]}`,
     },
     {
       label: "বাংলা কনভার্টার",
       icon: <Languages size={15} className="text-gray-600" />,
-      href: "#",
+      href: "/converter",
     },
   ];
 
   const mainNavLinks = [
-    { label: "সর্বশেষ", href: "#" },
-    { label: "জাতীয়", href: "#" },
-    { label: "রাজনীতি", href: "#" },
-    { label: "সারাদেশ", href: "#" },
-    { label: "বিশ্ব", href: "#" },
-    { label: "বিনোদন", href: "#" },
-    { label: "খেলা", href: "#" },
-    { label: "বাণিজ্য", href: "#" },
-    { label: "চাকরি", href: "#" },
-    { label: "মতামত", href: "#" },
-    { label: "ভিডিও", href: "#" },
+    "সর্বশেষ",
+    "জাতীয়",
+    "রাজনীতি",
+    "সারাদেশ",
+    "বিশ্ব",
+    "বিনোদন",
+    "খেলা",
+    "বাণিজ্য",
+    "চাকরি",
+    "মতামত",
+    "ভিডিও",
   ];
+
+  // Close mega menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (megaRef.current && !megaRef.current.contains(e.target as Node)) {
+        setMegaMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleNavClick = (label: string) => {
+    const slug = categorySlugMap[label] || label.toLowerCase();
+    router.push(`/${slug}`);
+  };
+
+  const todayBn = (() => {
+    const days = [
+      "রবিবার",
+      "সোমবার",
+      "মঙ্গলবার",
+      "বুধবার",
+      "বৃহস্পতিবার",
+      "শুক্রবার",
+      "শনিবার",
+    ];
+    const months = [
+      "জানুয়ারি",
+      "ফেব্রুয়ারি",
+      "মার্চ",
+      "এপ্রিল",
+      "মে",
+      "জুন",
+      "জুলাই",
+      "আগস্ট",
+      "সেপ্টেম্বর",
+      "অক্টোবর",
+      "নভেম্বর",
+      "ডিসেম্বর",
+    ];
+    const now = new Date();
+    const tobn = (n: number) =>
+      n
+        .toString()
+        .split("")
+        .map((d) => "০১২৩৪৫৬৭৮৯"[+d])
+        .join("");
+    return `${days[now.getDay()]}, ${tobn(now.getDate())} ${months[now.getMonth()]} ${tobn(now.getFullYear())}`;
+  })();
 
   return (
     <header className="w-full font-sans border-b border-gray-200 bg-white">
-      {/* Top Bar */}
       <div className="border-b border-gray-200">
         <div className="max-w-screen-xl mx-auto px-4 flex items-center justify-between h-[70px]">
-          {/* Logo */}
-          <a href="#" className="flex items-center shrink-0">
+          <a href="/" className="flex items-center shrink-0">
             <div className="flex flex-col leading-none select-none">
               <div className="flex items-center">
                 <span
                   className="text-[36px] font-extrabold tracking-tight"
-                  style={{
-                    color: "#111",
-                    lineHeight: 1,
-                  }}
+                  style={{ color: "#111", lineHeight: 1 }}
                 >
                   ডেইলি
                 </span>
-                <span className="relative mx-0.5">
-                  <span
-                    className="text-[36px] font-extrabold"
-                    style={{ color: "#111", lineHeight: 1 }}
-                  >
-                    টা
-                  </span>
-                  {/* Circle accent like the original */}
-                  <span
-                    className="absolute"
-                    style={{
-                      width: "28px",
-                      height: "28px",
-                      border: "3px solid #dc2626",
-                      borderRadius: "50%",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                </span>
+
                 <span
                   className="text-[36px] font-extrabold tracking-tight"
-                  style={{
-                    color: "#111",
-                    lineHeight: 1,
-                  }}
+                  style={{ color: "#111", lineHeight: 1 }}
                 >
-                  ইমস
+                  টাইমস
                 </span>
               </div>
             </div>
           </a>
 
-          {/* Top Navigation Links */}
-          <nav className="hidden font-semibold md:flex items-center gap-5">
+          <nav className="hidden font-semibold md:flex  items-center gap-5">
             {topNavLinks.map((link, i) => (
               <a
                 key={i}
                 href={link.href}
-                className={`flex items-center gap-1.5  whitespace-nowrap transition-colors hover:text-red-600 ${
+                className={`flex items-center gap-x-4 whitespace-nowrap transition-colors hover:text-red-600 text-[16px] ${
                   link.highlight
                     ? "text-red-600 font-semibold"
                     : "text-gray-700"
@@ -131,8 +158,6 @@ export default function Header() {
               </a>
             ))}
           </nav>
-
-          {/* Search Icon */}
           <button
             className="ml-4 text-gray-700 hover:text-red-600 transition-colors"
             aria-label="Search"
@@ -142,47 +167,121 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Bottom Main Nav Bar */}
-      <div className="bg-white font-bold ">
+      <div className="bg-white font-bold">
         <div className="max-w-5xl mx-auto px-4 flex items-center h-[44px]">
-          {/* Home Icon */}
           <a
-            href="#"
+            href="/"
             className="mr-5 text-gray-700 hover:text-red-600 transition-colors"
             aria-label="Home"
           >
             <Home size={18} strokeWidth={2} />
           </a>
 
-          {/* Divider */}
-          <div className="font-bold h-5 w-px bg-gray-300 mr-5" />
+          <div className="h-5 w-px bg-gray-300 mr-5" />
 
           {/* Main Nav Links */}
-          <nav className="font-bold flex items-center gap-x-5 flex-1 overflow-x-auto scrollbar-none">
-            {mainNavLinks.map((link, i) => (
-              <a
-                key={i}
-                href={link.href}
-                className=" font-bold text-gray-800 hover:text-red-600 whitespace-nowrap px-3 py-1 transition-colors relative group"
-              >
-                {link.label}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-red-600 group-hover:w-full transition-all duration-200" />
-              </a>
-            ))}
+          <nav className="flex items-center gap-x-4 flex-1 overflow-x-auto scrollbar-none">
+            {mainNavLinks.map((label, i) => {
+              const slug = categorySlugMap[label] || label.toLowerCase();
+              return (
+                <a
+                  key={i}
+                  href={`/${slug}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(label);
+                  }}
+                  className="font-bold text-[16px] text-gray-800 hover:text-red-600 whitespace-nowrap px-3 py-1 transition-colors relative group"
+                >
+                  {label}
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-red-600 group-hover:w-full transition-all duration-200" />
+                </a>
+              );
+            })}
           </nav>
 
-          {/* Hamburger Menu */}
-          <button
-            className="ml-4 text-gray-700 hover:text-red-600 transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="More menu"
-          >
-            <Menu size={20} strokeWidth={2} />
-          </button>
+          {/* Hamburger / Mega Menu Trigger */}
+          <div className="relative ml-4 " ref={megaRef}>
+            <button
+              className="text-gray-700 hover:text-red-600 transition-colors cursor-pointer"
+              onClick={() => setMegaMenuOpen((v) => !v)}
+              aria-label="More menu"
+            >
+              {megaMenuOpen ? (
+                <X size={20} strokeWidth={2} />
+              ) : (
+                <Menu size={20} strokeWidth={2} />
+              )}
+            </button>
+
+            {megaMenuOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 z-[9999] bg-white border border-gray-200 shadow-2xl rounded-sm"
+                style={{ width: "860px", maxWidth: "95vw" }}
+              >
+                <div className="px-5 py-2 border-b border-gray-100 text-[12px] text-gray-500 font-normal">
+                  {todayBn}
+                </div>
+
+                <div className="px-5 py-4 grid grid-cols-7 gap-x-4 gap-y-0 border-b border-gray-100">
+                  {megaMenuColumns.map((col, ci) => (
+                    <div key={ci} className="flex flex-col gap-y-2">
+                      {col.map((label) => {
+                        const slug =
+                          categorySlugMap[label] || label.toLowerCase();
+                        const isFirst = ci === 0 && label === col[0];
+                        return (
+                          <a
+                            key={label}
+                            href={`/${slug}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setMegaMenuOpen(false);
+                              router.push(`/${slug}`);
+                            }}
+                            className={`text-[16px] whitespace-nowrap transition-colors hover:text-red-600 ${
+                              isFirst
+                                ? "font-bold text-gray-900"
+                                : "text-gray-800 font-medium"
+                            }`}
+                          >
+                            {label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+                <div className="px-5 py-3 flex items-center gap-6">
+                  {mediaLinks.map((m) => (
+                    <a
+                      key={m.label}
+                      href={`/${m.slug}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setMegaMenuOpen(false);
+                        router.push(`/${m.slug}`);
+                      }}
+                      className="flex items-center gap-2 text-[12px] font-medium hover:opacity-80 transition-opacity whitespace-nowrap"
+                      style={{ color: m.color }}
+                    >
+                      <span
+                        className="flex items-center justify-center w-6 h-6 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: m.bg, color: m.color }}
+                      >
+                        {m.icon}
+                      </span>
+                      {m.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Mobile Dropdown (optional) */}
+      {/* Mobile Dropdown  */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white shadow-md">
           <div className="px-4 py-3 flex flex-col gap-2">
@@ -201,25 +300,26 @@ export default function Header() {
               </a>
             ))}
             <hr className="border-gray-200 my-1" />
-            {mainNavLinks.map((link, i) => (
-              <a
-                key={i}
-                href={link.href}
-                className="text-[14px] text-gray-800 hover:text-red-600 py-1"
-              >
-                {link.label}
-              </a>
-            ))}
+            {mainNavLinks.map((label, i) => {
+              const slug = categorySlugMap[label] || label.toLowerCase();
+              return (
+                <a
+                  key={i}
+                  href={`/${slug}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMobileMenuOpen(false);
+                    router.push(`/${slug}`);
+                  }}
+                  className="text-[14px] text-gray-800 hover:text-red-600 py-1"
+                >
+                  {label}
+                </a>
+              );
+            })}
           </div>
         </div>
       )}
-
-      {/* Google Fonts for Bengali */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@700;800;900&display=swap');
-        .scrollbar-none::-webkit-scrollbar { display: none; }
-        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </header>
   );
 }

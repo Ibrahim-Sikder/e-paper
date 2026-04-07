@@ -1,6 +1,4 @@
-// components/epaper/RightArticlePanel.tsx
 "use client";
-import React from "react";
 import Image from "next/image";
 
 interface Article {
@@ -22,7 +20,6 @@ export default function RightArticlePanel({
   selectedPage,
   viewMode = "image",
 }: Props) {
-  // কোনো article select না থাকলে placeholder
   if (!selectedArticle) {
     return (
       <div className="bg-gray-50 rounded-xl shadow-lg sticky top-4">
@@ -52,8 +49,6 @@ export default function RightArticlePanel({
   }
 
   const isHtml = selectedArticle.content?.trim().startsWith("<");
-
-  // ✅ TEXT VIEW — শুধু text content, image নেই
   if (viewMode === "text") {
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-4 max-h-[90vh] flex flex-col">
@@ -100,10 +95,8 @@ export default function RightArticlePanel({
     );
   }
 
-  // ✅ IMAGE VIEW (default) — article image + content
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-4 max-h-[90vh] flex flex-col">
-      {/* Article image — থাকলে দেখাবে */}
       {selectedArticle.articleImage && (
         <div className="relative bg-gray-100 flex-shrink-0">
           <Image
@@ -117,40 +110,6 @@ export default function RightArticlePanel({
           />
         </div>
       )}
-
-      {/* Content */}
-      <div className="p-4 overflow-y-auto flex-1">
-        {selectedArticle.category && (
-          <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full mb-2">
-            {selectedArticle.category}
-          </span>
-        )}
-
-        <h3 className="font-bold text-gray-800 text-base leading-snug mb-3">
-          {selectedArticle.title}
-        </h3>
-
-        {selectedArticle.content ? (
-          isHtml ? (
-            <div
-              className="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
-            />
-          ) : (
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-              {selectedArticle.content}
-            </p>
-          )
-        ) : (
-          <p className="text-sm text-gray-400 italic">
-            এই আর্টিকেলে কোনো টেক্সট কন্টেন্ট নেই।
-          </p>
-        )}
-
-        <p className="text-xs text-gray-400 mt-4 pt-3 border-t border-gray-100">
-          📄 পৃষ্ঠা {selectedPage?.pageNumber} • ই-পেপার থেকে সংগৃহীত
-        </p>
-      </div>
     </div>
   );
 }

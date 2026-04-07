@@ -50,7 +50,7 @@ export function useEpaperData(filter?: EpaperFilter) {
         if (filter?.edition) params.set("edition", filter.edition);
 
         const queryString = params.toString();
-        const url = `${baseUrl}/epaper${queryString ? `?${queryString}` : ""}`;
+        const url = `${baseUrl}/epapers${queryString ? `?${queryString}` : ""}`;
 
         const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to fetch epaper data");
@@ -74,7 +74,7 @@ export function useEpaperData(filter?: EpaperFilter) {
               thumbnail: page.thumbnail,
               epaperDate: epaper.date,
               epaperTitle: epaper.title,
-              edition: epaper.edition || "", // ✅
+              edition: epaper.edition || "",
               articles:
                 page.articles?.map((a: any) => ({
                   id: a.id,
@@ -110,4 +110,30 @@ export function useEpaperData(filter?: EpaperFilter) {
   }, [filter?.date, filter?.edition]);
 
   return { data, loading, error };
+}
+
+// ─── Hook to fetch all available dates (for calendar highlighting) ───────────
+export function useAvailableDates() {
+  const [dates, setDates] = useState<string[]>([]);
+  const [editions, setEditions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
+        // Adjust this endpoint to whatever your API exposes for listing dates/editions
+        const res = await fetch(`${baseUrl}/epapers/meta`);
+        if (!res.ok) return;
+        const result = await res.json();
+        // Expected shape: { data: { dates: string[], editions: string[] } }
+        setDates(result?.data?.dates || []);
+        setEditions(result?.data?.editions || []);
+      } catch {
+        // silently fail — calendar just won't highlight available dates
+      }
+    };
+    fetchMeta();
+  }, []);
+
+  return { dates, editions };
 }

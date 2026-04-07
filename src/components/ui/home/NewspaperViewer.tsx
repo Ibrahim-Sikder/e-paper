@@ -1,40 +1,107 @@
-// components/epaper/NewspaperViewer.tsx
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import NewsTopBar from "./NewsTopBar";
-import { useEpaperData, EpaperPage } from "@/hooks/useEpaperData";
+import {
+  useEpaperData,
+  useAvailableDates,
+  EpaperPage,
+} from "@/hooks/useEpaperData";
 import LeftThumbnailList from "./e-paper/LeftThumbnailList";
 import MiddleSwiperWithOverlay from "./e-paper/MiddleSwiperWithOverlay";
 import RightArticlePanel from "./e-paper/RightArticlePanel";
 
 export default function NewspaperViewer() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // ─── Read filter state from URL ────────────────────────────────────────────
+  const urlDate = searchParams.get("date") || undefined;
+  const urlEdition = searchParams.get("edition") || undefined;
+
+  // ─── Fetch epaper data filtered by URL params ──────────────────────────────
+  const { data, loading, error } = useEpaperData({
+    date: urlDate,
+    edition: urlEdition,
+  });
+
+  // ─── Fetch all available dates/editions for calendar highlighting ──────────
+  const { dates: availableDates, editions: availableEditions } =
+    useAvailableDates();
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"image" | "text" | "fullpage">(
     "image",
   );
   const swiperRef = useRef<any>(null);
-  const { data, loading, error } = useEpaperData();
 
   const pages = data?.pages || [];
   const activePage = pages[activeIndex] || null;
 
-  // ✅ FIX 1: Data load হলে বা page change হলে প্রথম article auto-select
+  // Create dummy pages for empty state
+  const displayPages = pages.length > 0 ? pages : [];
+  const displayActivePage = activePage || displayPages[0] || null;
+  const displayActiveIndex =
+    activeIndex < displayPages.length ? activeIndex : 0;
+
+  // Reset activeIndex when filtered data changes (new date/edition loaded)
   useEffect(() => {
-    if (activePage && activePage.articles && activePage.articles.length > 0) {
+    setActiveIndex(0);
+    if (swiperRef.current) swiperRef.current.slideTo(0, 0);
+  }, [urlDate, urlEdition]);
+
+  // Auto-select first article when page changes
+  useEffect(() => {
+    if (activePage?.articles?.length) {
       setSelectedArticle(activePage.articles[0]);
     } else {
       setSelectedArticle(null);
     }
-  }, [activeIndex, activePage?.id]); // activeIndex বা page id change হলে
+  }, [activeIndex, activePage?.id]);
 
+  // ─── URL updater — merges new params while keeping others ─────────────────
+  const updateUrlParams = useCallback(
+    (newParams: Record<string, string | undefined>) => {
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value === undefined || value === "") {
+          current.delete(key);
+        } else {
+          current.set(key, value);
+        }
+      });
+      const query = current.toString();
+      router.push(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+    },
+    [router, pathname, searchParams],
+  );
+
+  // ─── Date change from TopBar calendar ─────────────────────────────────────
+  const handleDateChange = useCallback(
+    (date: string) => {
+      updateUrlParams({ date });
+    },
+    [updateUrlParams],
+  );
+
+  // ─── Edition change from TopBar dropdown ──────────────────────────────────
+  const handleEditionChange = useCallback(
+    (edition: string) => {
+      updateUrlParams({ edition });
+    },
+    [updateUrlParams],
+  );
+
+  // ─── Page navigation ───────────────────────────────────────────────────────
   const handlePageSelect = useCallback(
     (page: EpaperPage) => {
       const index = pages.findIndex((p) => p.id === page.id);
       if (index === -1) return;
       setActiveIndex(index);
-      // ✅ article clear করি না — useEffect auto-set করবে
       if (swiperRef.current) swiperRef.current.slideTo(index);
     },
     [pages],
@@ -45,7 +112,6 @@ export default function NewspaperViewer() {
       const index = pageNumber - 1;
       if (index < 0 || index >= pages.length) return;
       setActiveIndex(index);
-      // ✅ article clear করি না — useEffect auto-set করবে
       if (swiperRef.current) swiperRef.current.slideTo(index);
     },
     [pages],
@@ -53,124 +119,154 @@ export default function NewspaperViewer() {
 
   const handleSlideChange = useCallback((swiper: any) => {
     setActiveIndex(swiper.activeIndex);
-    // ✅ article clear করি না — useEffect auto-set করবে
   }, []);
 
-  // ✅ FIX 2: View mode change করলে selectedArticle CLEAR হবে না
   const handleViewModeChange = useCallback(
     (mode: "image" | "text" | "fullpage") => {
       setViewMode(mode);
-      // setSelectedArticle করি না — same article থাকবে
     },
     [],
   );
 
-  // ✅ FIX 3: Article click করলে set হয়, view mode change এ clear হয় না
   const handleArticleClick = useCallback((article: any) => {
     setSelectedArticle(article);
   }, []);
 
+  // ─── Loading Skeleton ──────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="h-10 bg-gray-200 animate-pulse rounded mb-4" />
-        <div className="grid grid-cols-12 gap-5">
-          <div className="col-span-2 space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="w-full h-40 bg-gray-200 animate-pulse rounded-lg"
-              />
-            ))}
-          </div>
-          <div className="col-span-5">
-            <div className="w-full h-[600px] bg-gray-200 animate-pulse rounded-xl" />
-          </div>
-          <div className="col-span-5">
-            <div className="w-full h-[600px] bg-gray-200 animate-pulse rounded-xl" />
+      <>
+        {/* TopBar always visible */}
+        <NewsTopBar
+          pages={[]}
+          activeIndex={0}
+          viewMode={viewMode}
+          activePage={null}
+          onPageChange={() => {}}
+          onViewModeChange={handleViewModeChange}
+          onDateChange={handleDateChange}
+          onEditionChange={handleEditionChange}
+          availableDates={availableDates}
+          availableEditions={availableEditions}
+          currentDate={urlDate}
+          currentEdition={urlEdition}
+          isLoading={true}
+        />
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="h-10 bg-gray-200 animate-pulse rounded mb-4" />
+          <div className="grid grid-cols-12 gap-5">
+            <div className="col-span-2 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-full h-40 bg-gray-200 animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+            <div className="col-span-5">
+              <div className="w-full h-[600px] bg-gray-200 animate-pulse rounded-xl" />
+            </div>
+            <div className="col-span-5">
+              <div className="w-full h-[600px] bg-gray-200 animate-pulse rounded-xl" />
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-6 text-center py-20">
-        <div className="text-6xl mb-4">⚠️</div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">
-          ডেটা লোড করতে সমস্যা হয়েছে
-        </h2>
-        <p className="text-gray-500 text-sm">{error}</p>
-      </div>
-    );
-  }
-
+  // ─── Empty State with TopBar visible ───────────────────────────────────────
   if (!data || !pages.length) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-6 text-center py-20">
-        <div className="text-6xl mb-4">📰</div>
-        <h2 className="text-xl font-semibold text-gray-700">
-          কোনো ই-পেপার পাওয়া যায়নি
-        </h2>
-      </div>
+      <>
+        <NewsTopBar
+          pages={[]}
+          activeIndex={0}
+          viewMode={viewMode}
+          activePage={null}
+          onPageChange={() => {}}
+          onViewModeChange={handleViewModeChange}
+          onDateChange={handleDateChange}
+          onEditionChange={handleEditionChange}
+          availableDates={availableDates}
+          availableEditions={availableEditions}
+          currentDate={urlDate}
+          currentEdition={urlEdition}
+        />
+        <div className="max-w-7xl mx-auto px-4 py-6 text-center py-20">
+          <div className="text-6xl mb-4">📰</div>
+          <h2 className="text-xl font-semibold text-gray-700">
+            {urlDate || urlEdition
+              ? `${urlDate || ""} ${urlEdition || ""} তারিখের জন্য কোনো ই-পেপার পাওয়া যায়নি`
+              : "কোনো ই-পেপার পাওয়া যায়নি"}
+          </h2>
+          <button
+            onClick={() => router.push(pathname)}
+            className="mt-4 text-blue-600 text-sm underline"
+          >
+            সব ই-পেপার দেখুন
+          </button>
+        </div>
+      </>
     );
   }
 
   return (
     <div className="bg-gray-50 min-h-screen">
       <NewsTopBar
-        pages={pages}
-        activeIndex={activeIndex}
+        pages={displayPages}
+        activeIndex={displayActiveIndex}
         viewMode={viewMode}
-        activePage={activePage}
+        activePage={displayActivePage}
         onPageChange={handleTopBarPageChange}
         onViewModeChange={handleViewModeChange}
+        onDateChange={handleDateChange}
+        onEditionChange={handleEditionChange}
+        availableDates={availableDates}
+        availableEditions={availableEditions}
+        currentDate={urlDate || displayActivePage?.epaperDate}
+        currentEdition={urlEdition || displayActivePage?.edition}
       />
 
-      {/* Full Page Modal */}
-      {viewMode === "fullpage" && activePage && (
-        <FullPageModal page={activePage} onClose={() => setViewMode("image")} />
+      {viewMode === "fullpage" && displayActivePage && (
+        <FullPageModal
+          page={displayActivePage}
+          onClose={() => setViewMode("image")}
+        />
       )}
 
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        {activePage?.epaperTitle && (
-          <h1 className="text-xl font-bold text-gray-800 mb-3">
-            📰 {activePage.epaperTitle}
-            <span className="text-sm font-normal text-gray-400 ml-2">
-              ({activePage.epaperDate})
-            </span>
-          </h1>
-        )}
-
-        <div className="grid grid-cols-12 gap-5">
-          {/* Left thumbnails */}
-          <div className="col-span-2">
+      <div className="max-w-[1400px] mx-auto px-4 py-4">
+        <div className="flex">
+          <div className="">
+            <h5 className="bg-[#1A73E8] text-white px-1 py-1 rounded- text-xs text-center mb-2">
+              All Page
+            </h5>
             <LeftThumbnailList
-              pages={pages}
-              activeIndex={activeIndex}
+              pages={displayPages}
+              activeIndex={displayActiveIndex}
               onPageSelect={handlePageSelect}
             />
           </div>
+          <div className="grid grid-cols-12 gap-2">
+            {/* Middle swiper */}
+            <div className="col-span-5 shadow-lg">
+              <MiddleSwiperWithOverlay
+                pages={displayPages}
+                initialIndex={displayActiveIndex}
+                onArticleClick={handleArticleClick}
+                onSlideChange={handleSlideChange}
+                swiperRef={swiperRef}
+              />
+            </div>
 
-          {/* Middle — সবসময় image/swiper, কোনো view mode এই change হয় না */}
-          <div className="col-span-5">
-            <MiddleSwiperWithOverlay
-              pages={pages}
-              initialIndex={activeIndex}
-              onArticleClick={handleArticleClick}
-              onSlideChange={handleSlideChange}
-              swiperRef={swiperRef}
-            />
-          </div>
-
-          {/* Right — selected article দেখাবে, viewMode অনুযায়ী style */}
-          <div className="col-span-5">
-            <RightArticlePanel
-              selectedArticle={selectedArticle}
-              selectedPage={activePage}
-              viewMode={viewMode}
-            />
+            {/* Right article panel */}
+            <div className="col-span-7">
+              <RightArticlePanel
+                selectedArticle={selectedArticle}
+                selectedPage={displayActivePage}
+                viewMode={viewMode}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -178,6 +274,7 @@ export default function NewspaperViewer() {
   );
 }
 
+// ─── Full Page Modal ───────────────────────────────────────────────────────────
 function FullPageModal({
   page,
   onClose,
