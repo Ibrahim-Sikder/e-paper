@@ -1,18 +1,39 @@
 // types/epaper.ts
-export interface Article {
+export interface EpaperArticle {
   id: string;
   title: string;
+  content: string;
+  category: string;
+  articleImage: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  articleImage: string; // আর্টিকেলের ছবি (ePaper এর অংশ)
 }
 
 export interface EpaperPage {
-  id: number;
+  id: string; // Change this from 'number' to 'string'
   pageNumber: number;
-  image: any; // পুরো পৃষ্ঠার ছবি
-  thumbnail: any; // থাম্বনেইল ছবি
-  articles: Article[];
+  image: string;
+  thumbnail: string;
+  articles: EpaperArticle[];
+  epaperDate?: string;
+  epaperTitle?: string;
+  edition?: string;
+}
+
+export interface Props {
+  pages: EpaperPage[];
+  activeIndex: number;
+  viewMode: "image" | "text" | "fullpage";
+  activePage: EpaperPage | null;
+  onPageChange: (pageNumber: number) => void;
+  onViewModeChange: (mode: "image" | "text" | "fullpage") => void;
+  onDateChange?: (date: string) => void;
+  onEditionChange?: (edition: string) => void;
+  availableDates?: string[];
+  availableEditions?: string[];
+  currentDate?: string;
+  currentEdition?: string;
+  isLoading?: boolean;
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/share/header/Header";
+import Footer from "@/components/share/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,8 +13,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
-// ✅ No localFont needed — font is loaded via @font-face in globals.css
 
 export const metadata: Metadata = {
   title: "Daily Times",
@@ -33,6 +32,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );
