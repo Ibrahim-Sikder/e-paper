@@ -1,4 +1,4 @@
-import NewspaperViewer from "@/components/ui/home/e-paper/NewspaperViewer";
+import NewspaperViewer from "@/components/home/e-paper/NewspaperViewer";
 
 export default function Page() {
   return <NewspaperViewer />;

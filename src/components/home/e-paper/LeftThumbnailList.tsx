@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
@@ -24,7 +25,6 @@ export default function LeftThumbnailList({
     });
   }, [activeIndex]);
 
-  // Apply scrollbar styles
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.style.scrollbarWidth = "thin";
@@ -37,7 +37,7 @@ export default function LeftThumbnailList({
   return (
     <div
       ref={scrollContainerRef}
-      className="h-[calc(100vh-120px)] overflow-y-auto pr-1 space-y-3"
+      className="h-[calc(100vh-120px)] overflow-y-auto pr-1 space-y-3 w-[120px]"
       style={{
         scrollbarWidth: "thin",
         scrollbarColor: "#cbd5e1 #f1f5f9",
@@ -71,7 +71,7 @@ export default function LeftThumbnailList({
           }}
           onClick={() => onPageSelect(page)}
           className={`
-            relative cursor-pointer  overflow-hidden transition-all duration-200 w-[120px]
+            relative cursor-pointer overflow-hidden transition-all duration-200
             ${
               activeIndex === index
                 ? "ring-2 ring-blue-500 ring-offset-2 shadow-md"
@@ -82,8 +82,8 @@ export default function LeftThumbnailList({
           <Image
             src={page.thumbnail}
             alt={`Page ${page.pageNumber}`}
-            width={300}
-            height={400}
+            width={120}
+            height={160}
             className="w-full h-auto block"
             unoptimized
           />

@@ -7,7 +7,7 @@ import {
   LinkedInIcon,
   TwitterIcon,
   WhatsAppIcon,
-} from "../../Icon";
+} from "@/components/ui/Icon";
 
 interface ShareButtonProps {
   activePage?: any;

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -19,17 +20,14 @@ export default function NewspaperViewer() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // ─── Read filter state from URL ────────────────────────────────────────────
   const urlDate = searchParams.get("date") || undefined;
   const urlEdition = searchParams.get("edition") || undefined;
 
-  // ─── Fetch epaper data filtered by URL params ──────────────────────────────
   const { data, loading, error } = useEpaperData({
     date: urlDate,
     edition: urlEdition,
   });
 
-  // ─── Fetch all available dates/editions for calendar highlighting ──────────
   const { dates: availableDates, editions: availableEditions } =
     useAvailableDates();
 
@@ -43,19 +41,16 @@ export default function NewspaperViewer() {
   const pages = data?.pages || [];
   const activePage = pages[activeIndex] || null;
 
-  // Create dummy pages for empty state
   const displayPages = pages.length > 0 ? pages : [];
   const displayActivePage = activePage || displayPages[0] || null;
   const displayActiveIndex =
     activeIndex < displayPages.length ? activeIndex : 0;
 
-  // Reset activeIndex when filtered data changes (new date/edition loaded)
   useEffect(() => {
     setActiveIndex(0);
     if (swiperRef.current) swiperRef.current.slideTo(0, 0);
   }, [urlDate, urlEdition]);
 
-  // Auto-select first article when page changes
   useEffect(() => {
     if (activePage?.articles?.length) {
       setSelectedArticle(activePage.articles[0]);
@@ -64,7 +59,6 @@ export default function NewspaperViewer() {
     }
   }, [activeIndex, activePage?.id]);
 
-  // ─── URL updater — merges new params while keeping others ─────────────────
   const updateUrlParams = useCallback(
     (newParams: Record<string, string | undefined>) => {
       const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -81,7 +75,6 @@ export default function NewspaperViewer() {
     [router, pathname, searchParams],
   );
 
-  // ─── Date change from TopBar calendar ─────────────────────────────────────
   const handleDateChange = useCallback(
     (date: string) => {
       updateUrlParams({ date });
@@ -89,7 +82,6 @@ export default function NewspaperViewer() {
     [updateUrlParams],
   );
 
-  // ─── Edition change from TopBar dropdown ──────────────────────────────────
   const handleEditionChange = useCallback(
     (edition: string) => {
       updateUrlParams({ edition });
@@ -97,7 +89,6 @@ export default function NewspaperViewer() {
     [updateUrlParams],
   );
 
-  // ─── Page navigation ───────────────────────────────────────────────────────
   const handlePageSelect = useCallback(
     (page: EpaperPage) => {
       const index = pages.findIndex((p) => p.id === page.id);
@@ -133,7 +124,6 @@ export default function NewspaperViewer() {
     setSelectedArticle(article);
   }, []);
 
-  // ─── Loading Skeleton ──────────────────────────────────────────────────────
   if (loading) {
     return (
       <>
@@ -153,7 +143,6 @@ export default function NewspaperViewer() {
           isLoading={true}
         />
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="h-10 bg-gray-200 animate-pulse rounded mb-4" />
           <div className="grid grid-cols-12 gap-5">
             <div className="col-span-2 space-y-3">
               {[1, 2, 3].map((i) => (
@@ -175,7 +164,6 @@ export default function NewspaperViewer() {
     );
   }
 
-  // ─── Empty State with TopBar visible ───────────────────────────────────────
   if (!data || !pages.length) {
     return (
       <>
@@ -236,10 +224,10 @@ export default function NewspaperViewer() {
       )}
 
       <div className="max-w-[1400px] mx-auto px-4 py-4">
-        <div className="flex">
-          <div className="">
-            <h5 className="bg-[#1A73E8] text-white px-1 py-1 rounded- text-xs text-center mb-2">
-              All Page
+        <div className="flex gap-4">
+          <div className="w-[120px] flex-shrink-0">
+            <h5 className="bg-[#1A73E8] text-white px-1 py-1 rounded text-xs text-center mb-2">
+              All Pages
             </h5>
             <LeftThumbnailList
               pages={displayPages}
@@ -247,25 +235,26 @@ export default function NewspaperViewer() {
               onPageSelect={handlePageSelect}
             />
           </div>
-          <div className="grid grid-cols-12 gap-2">
-            {/* Middle swiper */}
-            <div className="col-span-5 shadow-lg">
-              <MiddleSwiperWithOverlay
-                pages={displayPages}
-                initialIndex={displayActiveIndex}
-                onArticleClick={handleArticleClick}
-                onSlideChange={handleSlideChange}
-                swiperRef={swiperRef}
-              />
-            </div>
+          <div className="flex-1">
+            <div className="grid grid-cols-12 gap-4">
+              <div className="col-span-5">
+                <MiddleSwiperWithOverlay
+                  pages={displayPages}
+                  initialIndex={displayActiveIndex}
+                  onArticleClick={handleArticleClick}
+                  onSlideChange={handleSlideChange}
+                  swiperRef={swiperRef}
+                />
+              </div>
 
-            {/* Right article panel */}
-            <div className="col-span-7">
-              <RightArticlePanel
-                selectedArticle={selectedArticle}
-                selectedPage={displayActivePage}
-                viewMode={viewMode}
-              />
+              <div className="col-span-7">
+                <RightArticlePanel
+                  selectedArticle={selectedArticle}
+                  selectedPage={displayActivePage}
+                  viewMode={viewMode}
+                  footerInfo={data?.footerInfo}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -274,7 +263,6 @@ export default function NewspaperViewer() {
   );
 }
 
-// ─── Full Page Modal ───────────────────────────────────────────────────────────
 function FullPageModal({
   page,
   onClose,
@@ -294,14 +282,13 @@ function FullPageModal({
         ✕
       </button>
       <div
-        className="max-w-3xl w-full max-h-screen overflow-y-auto px-4"
+        className="max-w-5xl w-full max-h-screen overflow-y-auto px-4"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={page.image}
           alt={`Page ${page.pageNumber}`}
-          className="w-full h-auto rounded-lg"
+          className="w-full h-auto rounded-lg shadow-2xl"
         />
       </div>
     </div>

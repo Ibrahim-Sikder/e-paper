@@ -20,6 +20,7 @@ export default function NewsTopBar({
   availableEditions = [],
   currentDate,
   currentEdition,
+  isLoading = false,
 }: Props) {
   const totalPages = pages.length;
   const currentPageNumber = activeIndex + 1;
@@ -42,11 +43,23 @@ export default function NewsTopBar({
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="bg-white border-b border-gray-100 shadow-[0_2px_12px_0_rgba(0,0,0,0.07)] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-2">
+          <div className="h-8 w-32 bg-gray-200 animate-pulse rounded" />
+          <div className="h-8 w-32 bg-gray-200 animate-pulse rounded" />
+          <div className="h-8 w-48 bg-gray-200 animate-pulse rounded ml-auto" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white border-b border-gray-100 shadow-[0_2px_12px_0_rgba(0,0,0,0.07)] sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-2 flex-wrap">
         {/* Left Section - Edition & Date */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <EditionSelector
             editions={availableEditions}
             pages={pages}
@@ -63,19 +76,23 @@ export default function NewsTopBar({
         </div>
 
         {/* Separator */}
-        <div className="h-5 w-px bg-gray-200 flex-shrink-0" />
+        {pages.length > 0 && (
+          <div className="h-5 w-px bg-gray-200 flex-shrink-0" />
+        )}
 
         {/* Pagination */}
-        <Pagination
-          pages={pages}
-          activeIndex={activeIndex}
-          currentPageNumber={currentPageNumber}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
+        {pages.length > 0 && (
+          <Pagination
+            pages={pages}
+            activeIndex={activeIndex}
+            currentPageNumber={currentPageNumber}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        )}
 
         {/* Right Actions */}
-        <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
+        <div className="ml-auto flex items-center gap-1.5 flex-shrink-0 flex-wrap">
           {/* View Mode Toggle */}
           <div className="flex items-center rounded-sm border border-gray-200 bg-white shadow-sm overflow-hidden">
             {[
@@ -103,13 +120,15 @@ export default function NewsTopBar({
           <ShareButton activePage={activePage} />
 
           {/* Download Button */}
-          <button
-            onClick={handleDownload}
-            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-sm border border-gray-200 bg-white text-xs font-medium text-gray-600 shadow-sm hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition-all whitespace-nowrap"
-          >
-            <Download className="w-3.5 h-3.5" />
-            ডাউনলোড
-          </button>
+          {activePage?.image && (
+            <button
+              onClick={handleDownload}
+              className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-sm border border-gray-200 bg-white text-xs font-medium text-gray-600 shadow-sm hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition-all whitespace-nowrap"
+            >
+              <Download className="w-3.5 h-3.5" />
+              ডাউনলোড
+            </button>
+          )}
         </div>
       </div>
     </div>

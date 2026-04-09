@@ -1,4 +1,3 @@
-// components/epaper/MiddleSwiperWithOverlay.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useRef, useCallback, useEffect } from "react";
@@ -10,11 +9,13 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { EpaperPage } from "@/hooks/useEpaperData";
 
-interface PageSize {
-  width: number;
-  height: number;
-  naturalWidth: number;
-  naturalHeight: number;
+interface RenderedSize {
+  // Rendered dimensions of the <img> element (CSS pixels)
+  displayWidth: number;
+  displayHeight: number;
+  // Natural / original dimensions stored in the page data
+  originalWidth: number;
+  originalHeight: number;
   ready: boolean;
 }
 
@@ -34,69 +35,88 @@ export default function MiddleSwiperWithOverlay({
   swiperRef,
 }: Props) {
   const [hoveredArticle, setHoveredArticle] = useState<string | null>(null);
-  const [pageSizes, setPageSizes] = useState<Record<string, PageSize>>({});
+  const [renderedSizes, setRenderedSizes] = useState<
+    Record<string, RenderedSize>
+  >({});
   const imageRefs = useRef<Record<string, HTMLImageElement | null>>({});
 
-  // External index change (left thumbnail click) → slide
+  // Sync swiper to initialIndex when it changes externally
   useEffect(() => {
     if (swiperRef.current && swiperRef.current.activeIndex !== initialIndex) {
       swiperRef.current.slideTo(initialIndex, 300);
     }
   }, [initialIndex, swiperRef]);
 
-  // const handleImageLoad = useCallback((pageId: string) => {
-  //   const img = imageRefs.current[pageId];
-  //   if (!img) return;
-  //   const rect = img.getBoundingClientRect();
-  //   setPageSizes((prev) => ({
-  //     ...prev,
-  //     [pageId]: {
-  //       width: rect.width,
-  //       height: rect.height,
-  //       naturalWidth: img.naturalWidth,
-  //       naturalHeight: img.naturalHeight,
-  //       ready: true,
-  //     },
-  //   }));
-  // }, []);
-
-  // MiddleSwiperWithOverlay.tsx — handleImageLoad fixed
-  const handleImageLoad = useCallback((pageId: string) => {
+  // Measure the rendered size of an image and store it.
+  // We use a ResizeObserver so the overlay stays correct when the container resizes.
+  const measureImage = useCallback((pageId: string, page: EpaperPage) => {
     const img = imageRefs.current[pageId];
     if (!img) return;
 
-    // getBoundingClientRect() দেওয়ার বদলে img.width/height ব্যবহার করুন
-    // কারণ rect এ CSS-scaled size আসে যা সঠিক — কিন্তু
-    // naturalWidth/naturalHeight দিয়ে আমরা scale calculate করব
-
-    const updateSize = () => {
-      // img এখনো layout পায়নি হলে retry
+    const doMeasure = () => {
       if (img.offsetWidth === 0) {
-        requestAnimationFrame(updateSize);
+        // Image not yet painted — retry next frame
+        requestAnimationFrame(doMeasure);
         return;
       }
-      setPageSizes((prev) => ({
+      setRenderedSizes((prev) => ({
         ...prev,
         [pageId]: {
-          width: img.offsetWidth, // CSS-rendered width (screen এ যতটুকু দেখাচ্ছে)
-          height: img.offsetHeight, // CSS-rendered height
-          naturalWidth: img.naturalWidth, // original image width
-          naturalHeight: img.naturalHeight, // original image height
+          displayWidth: img.offsetWidth,
+          displayHeight: img.offsetHeight,
+          // Prefer the value stored on the page (set during coordinate picking).
+          // Fall back to the image's natural dimensions if the page value is missing/wrong.
+          originalWidth:
+            page.originalWidth > 0 ? page.originalWidth : img.naturalWidth,
+          originalHeight:
+            page.originalHeight > 0 ? page.originalHeight : img.naturalHeight,
           ready: true,
         },
       }));
     };
 
-    updateSize();
+    doMeasure();
   }, []);
 
+  const handleImageLoad = useCallback(
+    (pageId: string, page: EpaperPage) => {
+      measureImage(pageId, page);
+    },
+    [measureImage],
+  );
+
+  // Attach a ResizeObserver per image so overlays reposition on window resize
+  useEffect(() => {
+    const observers: ResizeObserver[] = [];
+
+    pages.forEach((page) => {
+      const img = imageRefs.current[page.id];
+      if (!img) return;
+
+      const ro = new ResizeObserver(() => measureImage(page.id, page));
+      ro.observe(img);
+      observers.push(ro);
+    });
+
+    return () => observers.forEach((ro) => ro.disconnect());
+  }, [pages, measureImage]);
+
+  /**
+   * Convert article coords (stored in natural/original image space) to
+   * CSS pixel positions relative to the rendered <img> element.
+   *
+   * article.x/y/width/height  → natural image pixels
+   * scaleX/scaleY             → ratio of rendered size to natural size
+   * result                    → CSS pixels from the top-left of the rendered image
+   */
   const getPosition = useCallback(
     (article: EpaperPage["articles"][0], pageId: string) => {
-      const size = pageSizes[pageId];
-      if (!size?.ready || !size.naturalWidth)
-        return { left: 0, top: 0, width: 0, height: 0 };
-      const scaleX = size.width / size.naturalWidth;
-      const scaleY = size.height / size.naturalHeight;
+      const size = renderedSizes[pageId];
+      if (!size?.ready) return null;
+
+      const scaleX = size.displayWidth / size.originalWidth;
+      const scaleY = size.displayHeight / size.originalHeight;
+
       return {
         left: article.x * scaleX,
         top: article.y * scaleY,
@@ -104,8 +124,16 @@ export default function MiddleSwiperWithOverlay({
         height: article.height * scaleY,
       };
     },
-    [pageSizes],
+    [renderedSizes],
   );
+
+  if (!pages.length) {
+    return (
+      <div className="rounded-xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center h-[600px]">
+        <p className="text-gray-500">কোনো পৃষ্ঠা পাওয়া যায়নি</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
@@ -125,23 +153,29 @@ export default function MiddleSwiperWithOverlay({
         {pages.map((page) => (
           <SwiperSlide key={page.id}>
             <div className="relative w-full bg-gray-100">
-              <Image
+              {/* Use a plain <img> inside a wrapper so we can reliably read
+                  offsetWidth / offsetHeight / naturalWidth / naturalHeight.
+                  next/image wraps the element in extra divs that can cause
+                  getBoundingClientRect() to differ from offsetWidth. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 ref={(el) => {
                   imageRefs.current[page.id] = el;
                 }}
                 src={page.image}
                 alt={`Page ${page.pageNumber}`}
-                width={800}
-                height={1100}
-                className="w-full h-auto"
-                unoptimized
-                onLoad={() => handleImageLoad(page.id)}
+                className="w-full h-auto block"
+                onLoad={() => handleImageLoad(page.id, page)}
+                draggable={false}
               />
 
-              {pageSizes[page.id]?.ready &&
-                page.articles.map((article) => {
+              {/* Article hit-areas — only rendered once the image size is known */}
+              {renderedSizes[page.id]?.ready &&
+                page.articles?.map((article) => {
                   const pos = getPosition(article, page.id);
-                  if (!pos.width || !pos.height) return null;
+                  // Skip articles with no valid position or zero area
+                  if (!pos || pos.width < 1 || pos.height < 1) return null;
+
                   return (
                     <div
                       key={article.id}
