@@ -233,7 +233,7 @@ export default function NewspaperViewer() {
         <div className="flex gap-4">
           <div className="w-[120px] flex-shrink-0">
             <h5 className="bg-[#1A73E8] text-white px-1 py-1 rounded text-xs text-center mb-2">
-              All Pages
+              সকল পাতা
             </h5>
             <LeftThumbnailList
               pages={displayPages}

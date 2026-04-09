@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { PaginationProps } from "@/types/epaper";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface PaginationProps {
-  pages: any[];
-  activeIndex: number;
-  currentPageNumber: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
 
 export function Pagination({
   pages,
@@ -40,7 +33,7 @@ export function Pagination({
           <button
             key={`pg-${index}`}
             onClick={() => onPageChange(index + 1)}
-            className={`w-7 h-7 text-xs rounded-sm border font-medium transition-all active:scale-95 shadow-sm ${
+            className={`w-7 h-7 text-sm font-semibold rounded-sm border transition-all active:scale-95 shadow-sm ${
               activeIndex === index
                 ? "bg-[#1A73E8] text-white border-[#1A73E8]"
                 : "bg-white text-gray-700 border-gray-200 hover:bg-blue-50 hover:border-blue-200"

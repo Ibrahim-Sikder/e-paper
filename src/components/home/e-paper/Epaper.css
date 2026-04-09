@@ -1,0 +1,42 @@
+.swiperContainer :global(.swiper-button-next),
+.swiperContainer :global(.swiper-button-prev) {
+  color: white !important;
+  background: rgba(0, 0, 0, 0.6);
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.swiperContainer :global(.swiper-button-next:hover),
+.swiperContainer :global(.swiper-button-prev:hover) {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.05);
+}
+
+.swiperContainer :global(.swiper-button-next:after),
+.swiperContainer :global(.swiper-button-prev:after) {
+  font-size: 14px !important;
+  font-weight: bold;
+}
+
+.swiperContainer :global(.swiper-pagination-bullet) {
+  background: white !important;
+  opacity: 0.6 !important;
+  width: 8px !important;
+  height: 8px !important;
+  transition: all 0.2s ease;
+}
+
+.swiperContainer :global(.swiper-pagination-bullet-active) {
+  opacity: 1 !important;
+  width: 20px !important;
+  border-radius: 4px !important;
+}
+
+.swiperContainer :global(.swiper) {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}

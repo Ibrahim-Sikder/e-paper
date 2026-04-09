@@ -58,7 +58,6 @@ export default function NewsTopBar({
   return (
     <div className="bg-white border-b border-gray-100 shadow-[0_2px_12px_0_rgba(0,0,0,0.07)] sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-2 flex-wrap">
-        {/* Left Section - Edition & Date */}
         <div className="flex items-center gap-2 flex-wrap">
           <EditionSelector
             editions={availableEditions}
@@ -74,13 +73,9 @@ export default function NewsTopBar({
             onDateChange={onDateChange}
           />
         </div>
-
-        {/* Separator */}
         {pages.length > 0 && (
           <div className="h-5 w-px bg-gray-200 flex-shrink-0" />
         )}
-
-        {/* Pagination */}
         {pages.length > 0 && (
           <Pagination
             pages={pages}
@@ -90,11 +85,8 @@ export default function NewsTopBar({
             onPageChange={onPageChange}
           />
         )}
-
-        {/* Right Actions */}
-        <div className="ml-auto flex items-center gap-1.5 flex-shrink-0 flex-wrap">
-          {/* View Mode Toggle */}
-          <div className="flex items-center rounded-sm border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="ml-auto flex items-center  flex-shrink-0 flex-wrap">
+          <div className="flex items-center rounded- border border-gray-200 bg-white shadow-sm overflow-hidden">
             {[
               { mode: "image" as const, label: "ইমেজ ভিউ" },
               { mode: "text" as const, label: "টেক্সট ভিউ" },
@@ -103,7 +95,7 @@ export default function NewsTopBar({
               <button
                 key={mode}
                 onClick={() => onViewModeChange(mode)}
-                className={`px-5 py-[7px] text-xs font-medium transition-all whitespace-nowrap
+                className={`px-8 py-[5px] text-sm font-semibold transition-all whitespace-nowrap
                   ${i < arr.length - 1 ? "border-r border-gray-200" : ""}
                   ${
                     viewMode === mode
@@ -115,17 +107,13 @@ export default function NewsTopBar({
               </button>
             ))}
           </div>
-
-          {/* Share Button */}
           <ShareButton activePage={activePage} />
-
-          {/* Download Button */}
           {activePage?.image && (
             <button
               onClick={handleDownload}
-              className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-sm border border-gray-200 bg-white text-xs font-medium text-gray-600 shadow-sm hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition-all whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-5 py-[5px] border border-gray-200 bg-white text-sm font-semibold text-gray-600 shadow-sm hover:bg-blue-50 hover:border-blue-200 active:scale-95 transition-all whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-4" />
               ডাউনলোড
             </button>
           )}

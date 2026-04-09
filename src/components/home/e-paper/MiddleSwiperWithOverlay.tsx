@@ -1,19 +1,18 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { EpaperPage } from "@/hooks/useEpaperData";
+import "./Epaper.css";
 
 interface RenderedSize {
-  // Rendered dimensions of the <img> element (CSS pixels)
   displayWidth: number;
   displayHeight: number;
-  // Natural / original dimensions stored in the page data
   originalWidth: number;
   originalHeight: number;
   ready: boolean;
@@ -40,7 +39,6 @@ export default function MiddleSwiperWithOverlay({
   >({});
   const imageRefs = useRef<Record<string, HTMLImageElement | null>>({});
 
-  // Sync swiper to initialIndex when it changes externally
   useEffect(() => {
     if (swiperRef.current && swiperRef.current.activeIndex !== initialIndex) {
       swiperRef.current.slideTo(initialIndex, 300);
@@ -55,7 +53,6 @@ export default function MiddleSwiperWithOverlay({
 
     const doMeasure = () => {
       if (img.offsetWidth === 0) {
-        // Image not yet painted — retry next frame
         requestAnimationFrame(doMeasure);
         return;
       }
@@ -64,8 +61,6 @@ export default function MiddleSwiperWithOverlay({
         [pageId]: {
           displayWidth: img.offsetWidth,
           displayHeight: img.offsetHeight,
-          // Prefer the value stored on the page (set during coordinate picking).
-          // Fall back to the image's natural dimensions if the page value is missing/wrong.
           originalWidth:
             page.originalWidth > 0 ? page.originalWidth : img.naturalWidth,
           originalHeight:
@@ -85,7 +80,6 @@ export default function MiddleSwiperWithOverlay({
     [measureImage],
   );
 
-  // Attach a ResizeObserver per image so overlays reposition on window resize
   useEffect(() => {
     const observers: ResizeObserver[] = [];
 
@@ -101,14 +95,6 @@ export default function MiddleSwiperWithOverlay({
     return () => observers.forEach((ro) => ro.disconnect());
   }, [pages, measureImage]);
 
-  /**
-   * Convert article coords (stored in natural/original image space) to
-   * CSS pixel positions relative to the rendered <img> element.
-   *
-   * article.x/y/width/height  → natural image pixels
-   * scaleX/scaleY             → ratio of rendered size to natural size
-   * result                    → CSS pixels from the top-left of the rendered image
-   */
   const getPosition = useCallback(
     (article: EpaperPage["articles"][0], pageId: string) => {
       const size = renderedSizes[pageId];
@@ -138,9 +124,8 @@ export default function MiddleSwiperWithOverlay({
   return (
     <div className="relative">
       <Swiper
-        modules={[Navigation, Pagination]}
+        modules={[Navigation]}
         navigation
-        pagination={{ clickable: true }}
         initialSlide={initialIndex}
         onSwiper={(swiper) => {
           swiperRef.current = swiper;
@@ -148,16 +133,11 @@ export default function MiddleSwiperWithOverlay({
         onSlideChange={onSlideChange}
         spaceBetween={20}
         slidesPerView={1}
-        className="rounded-xl overflow-hidden shadow-lg"
+        className="epaper-swiper"
       >
         {pages.map((page) => (
           <SwiperSlide key={page.id}>
             <div className="relative w-full bg-gray-100">
-              {/* Use a plain <img> inside a wrapper so we can reliably read
-                  offsetWidth / offsetHeight / naturalWidth / naturalHeight.
-                  next/image wraps the element in extra divs that can cause
-                  getBoundingClientRect() to differ from offsetWidth. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 ref={(el) => {
                   imageRefs.current[page.id] = el;
@@ -169,11 +149,10 @@ export default function MiddleSwiperWithOverlay({
                 draggable={false}
               />
 
-              {/* Article hit-areas — only rendered once the image size is known */}
               {renderedSizes[page.id]?.ready &&
                 page.articles?.map((article) => {
                   const pos = getPosition(article, page.id);
-                  // Skip articles with no valid position or zero area
+
                   if (!pos || pos.width < 1 || pos.height < 1) return null;
 
                   return (
@@ -204,28 +183,6 @@ export default function MiddleSwiperWithOverlay({
           </SwiperSlide>
         ))}
       </Swiper>
-
-      <style jsx>{`
-        :global(.swiper-button-next),
-        :global(.swiper-button-prev) {
-          color: white !important;
-          background: rgba(0, 0, 0, 0.45);
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-        }
-        :global(.swiper-button-next:after),
-        :global(.swiper-button-prev:after) {
-          font-size: 16px;
-        }
-        :global(.swiper-pagination-bullet) {
-          background: white !important;
-          opacity: 0.6 !important;
-        }
-        :global(.swiper-pagination-bullet-active) {
-          opacity: 1 !important;
-        }
-      `}</style>
     </div>
   );
 }

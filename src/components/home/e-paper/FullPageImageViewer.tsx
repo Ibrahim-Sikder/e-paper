@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { EpaperPage } from "@/types/epaper";
 import { useEffect, useRef, useState } from "react";
 
@@ -56,18 +57,15 @@ function FullPageImageViewer({
 
   const handleCopyImage = async () => {
     try {
-      // Copy the actual image URL (Cloudinary URL)
       const imageUrl = page.image;
 
       await navigator.clipboard.writeText(imageUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
 
-      // Optional: Show a small toast or notification
       console.log("Image URL copied:", imageUrl);
     } catch (error) {
       console.error("Failed to copy:", error);
-      // Fallback method for older browsers
       const textarea = document.createElement("textarea");
       textarea.value = page.image;
       document.body.appendChild(textarea);
@@ -103,8 +101,6 @@ function FullPageImageViewer({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
-
-  // Handle ESC key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -123,7 +119,6 @@ function FullPageImageViewer({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* Top Toolbar */}
       <div className="flex items-center justify-between px-4 py-3 bg-black/50 backdrop-blur-sm border-b border-white/10">
         <div className="text-white">
           <h3 className="font-medium text-sm">
@@ -133,7 +128,6 @@ function FullPageImageViewer({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Zoom Controls */}
           <div className="flex items-center gap-1 bg-white/10 rounded-lg">
             <button
               onClick={handleZoomOut}
@@ -160,8 +154,6 @@ function FullPageImageViewer({
               <Maximize size={16} />
             </button>
           </div>
-
-          {/* Copy Button - Copies Image URL */}
           <button
             onClick={handleCopyImage}
             className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors relative group"
@@ -178,8 +170,6 @@ function FullPageImageViewer({
               </span>
             )}
           </button>
-
-          {/* Download Button */}
           <button
             onClick={handleDownload}
             className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
@@ -187,8 +177,6 @@ function FullPageImageViewer({
           >
             <Download size={18} />
           </button>
-
-          {/* Fullscreen Button */}
           <button
             onClick={toggleFullscreen}
             className="p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
@@ -196,8 +184,6 @@ function FullPageImageViewer({
           >
             {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
           </button>
-
-          {/* Close Button */}
           <button
             onClick={onClose}
             className="p-2 text-white hover:bg-red-500/50 rounded-lg transition-colors ml-2"
@@ -207,8 +193,6 @@ function FullPageImageViewer({
           </button>
         </div>
       </div>
-
-      {/* Image Container */}
       <div className="flex-1 overflow-auto flex items-center justify-center p-4">
         <div
           className="transition-transform duration-200 ease-out"
@@ -223,15 +207,11 @@ function FullPageImageViewer({
           />
         </div>
       </div>
-
-      {/* Bottom Info Bar */}
       <div className="px-4 py-2 bg-black/50 backdrop-blur-sm border-t border-white/10 text-center">
         <p className="text-xs text-gray-400">
           📄 পৃষ্ঠা {page.pageNumber} / {page.epaperTitle} • {page.epaperDate}
         </p>
       </div>
-
-      {/* Instructions */}
       <div className="absolute bottom-4 right-4 text-xs text-gray-500 bg-black/50 px-2 py-1 rounded">
         ESC কী প্রেস করে বন্ধ করুন
       </div>

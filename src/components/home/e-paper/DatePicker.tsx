@@ -8,12 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-interface DatePickerProps {
-  currentDate?: string;
-  availableDates: string[];
-  onDateChange?: (date: string) => void;
-}
+import { DatePickerProps } from "@/types/epaper";
 
 export function DatePicker({
   currentDate,
@@ -46,7 +41,7 @@ export function DatePicker({
   };
 
   const pill =
-    "inline-flex items-center gap-1.5 px-3 py-[7px] rounded-sm border border-gray-200 bg-white text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all select-none cursor-pointer whitespace-nowrap";
+    "inline-flex items-center gap-1.5 px-3 py-[7px] rounded-sm border border-gray-200 bg-white text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all select-none cursor-pointer whitespace-nowrap";
 
   return (
     <Popover>
@@ -82,20 +77,6 @@ export function DatePicker({
           disabled={(date) => isDateDisabled(date)}
           initialFocus
         />
-        <div className="px-4 py-2.5 border-t border-gray-100 flex items-center justify-center gap-4 text-[11px]">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 bg-[#1A73E8] rounded-sm" />
-            <span className="text-gray-500">নির্বাচিত</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 bg-green-100 border border-green-300 rounded-full" />
-            <span className="text-gray-500">উপলব্ধ</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 bg-gray-100 border border-gray-200 rounded-full" />
-            <span className="text-gray-400">ভবিষ্যৎ</span>
-          </div>
-        </div>
       </PopoverContent>
     </Popover>
   );

@@ -1,18 +1,9 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
 "use client";
 
-import {
-  Archive,
-  Home,
-  Languages,
-  Menu,
-  Newspaper,
-  Search,
-  ThumbsUp,
-  X,
-} from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Home, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import {
   categorySlugMap,
   mainNavLinks,
@@ -20,6 +11,7 @@ import {
   megaMenuColumns,
   topNavLinks,
 } from "./Menu";
+import TopBar from "./TopBar";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -78,52 +70,7 @@ export default function Header() {
 
   return (
     <header className="w-full font-sans border-b border-gray-200 bg-white">
-      <div className="border-b border-gray-200">
-        <div className="max-w-screen-xl mx-auto px-4 flex items-center justify-between h-[70px]">
-          <a href="/" className="flex items-center shrink-0">
-            <div className="flex flex-col leading-none select-none">
-              <div className="flex items-center">
-                <span
-                  className="text-[36px] font-extrabold tracking-tight"
-                  style={{ color: "#111", lineHeight: 1 }}
-                >
-                  ডেইলি
-                </span>
-
-                <span
-                  className="text-[36px] font-extrabold tracking-tight"
-                  style={{ color: "#111", lineHeight: 1 }}
-                >
-                  টাইমস
-                </span>
-              </div>
-            </div>
-          </a>
-
-          <nav className="hidden font-semibold md:flex  items-center gap-5">
-            {topNavLinks.map((link, i) => (
-              <a
-                key={i}
-                href={link.href}
-                className={`flex items-center gap-x-4 whitespace-nowrap transition-colors hover:text-red-600 text-[16px] ${
-                  link.highlight
-                    ? "text-red-600 font-semibold"
-                    : "text-gray-700"
-                }`}
-              >
-                {link.icon}
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <button
-            className="ml-4 text-gray-700 hover:text-red-600 transition-colors"
-            aria-label="Search"
-          >
-            <Search size={20} strokeWidth={2} />
-          </button>
-        </div>
-      </div>
+      <TopBar />
 
       <div className="bg-white font-bold">
         <div className="max-w-5xl mx-auto px-4 flex items-center h-[44px]">
@@ -158,7 +105,7 @@ export default function Header() {
           </nav>
 
           {/* Hamburger */}
-          <div className="relative ml-4 " ref={megaRef}>
+          <div className="relative ml-4" ref={megaRef}>
             <button
               className="text-gray-700 hover:text-red-600 transition-colors cursor-pointer"
               onClick={() => setMegaMenuOpen((v) => !v)}
@@ -174,13 +121,13 @@ export default function Header() {
             {megaMenuOpen && (
               <div
                 className="absolute right-0 top-full mt-2 z-[9999] bg-white border border-gray-200 shadow-2xl rounded-sm"
-                style={{ width: "860px", maxWidth: "95vw" }}
+                style={{ width: "1200px", maxWidth: "95vw" }}
               >
                 <div className="px-5 py-2 border-b border-gray-100 text-[12px] text-gray-500 font-normal">
                   {todayBn}
                 </div>
 
-                <div className="px-5 py-4 grid grid-cols-7 gap-x-4 gap-y-0 border-b border-gray-100">
+                <div className="px-5 py-4 grid grid-cols-7 gap-x-5 gap-y-0 border-b border-gray-100">
                   {megaMenuColumns.map((col, ci) => (
                     <div key={ci} className="flex flex-col gap-y-2">
                       {col.map((label) => {
@@ -199,7 +146,7 @@ export default function Header() {
                             className={`text-[16px] whitespace-nowrap transition-colors hover:text-red-600 ${
                               isFirst
                                 ? "font-bold text-gray-900"
-                                : "text-gray-800 font-medium"
+                                : "text-gray-800 font-semibold"
                             }`}
                           >
                             {label}

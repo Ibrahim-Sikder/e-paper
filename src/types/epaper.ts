@@ -24,9 +24,15 @@ export interface EpaperPage {
   originalWidth: number;
   originalHeight: number;
   articles: EpaperArticle[];
-  epaperDate?: string;
-  epaperTitle?: string;
+  epaperDate: string; // Changed from optional to required
+  epaperTitle: string; // Changed from optional to required
   edition?: string;
+  footerInfo?: {
+    editor: string;
+    publisher: string;
+    organization: string;
+    copyright: string;
+  };
 }
 
 export interface EpaperData {
@@ -35,6 +41,12 @@ export interface EpaperData {
     total: number;
     date: string;
     title: string;
+  };
+  footerInfo?: {
+    editor: string;
+    publisher: string;
+    organization: string;
+    copyright: string;
   };
 }
 
@@ -91,7 +103,6 @@ export interface AddEpaperFormProps {
   isEditing?: boolean;
 }
 
-
 export interface Article {
   id: string;
   title: string;
@@ -119,4 +130,36 @@ export interface articleProps {
 export interface ArticleFooterProps {
   footerInfo?: FooterInfo | null;
   className?: string;
+}
+
+export interface PaginationProps {
+  pages: any[];
+  activeIndex: number;
+  currentPageNumber: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+export interface EditionSelectorProps {
+  editions: string[];
+  pages: any[];
+  currentEdition?: string;
+  displayEdition: string;
+  onEditionChange?: (edition: string) => void;
+}
+
+export interface ShareButtonProps {
+  activePage?: any;
+}
+
+export interface leftSideProps {
+  pages: EpaperPage[];
+  activeIndex: number;
+  onPageSelect: (page: EpaperPage) => void;
+}
+
+export interface DatePickerProps {
+  currentDate?: string;
+  availableDates: string[];
+  onDateChange?: (date: string) => void;
 }

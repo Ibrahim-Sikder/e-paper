@@ -142,9 +142,8 @@
 
 body,
 html {
-  /* background-color: var(--background); */
-  /* color: var(--foreground); */
   font-size: 16px;
+  font-family: "SolaimanLipi";
 }
 
 .dark {
@@ -192,30 +191,83 @@ html {
     @apply font-sans;
   }
 }
-/* styles/globals.css */
-.custom-scrollbar {
-  scrollbar-width: thin;
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  .hover\:scale-102:hover {
+    transform: scale(1.02);
+  }
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* Swiper Custom Styles */
+.swiper-button-prev,
+.swiper-button-next {
+  background: #1a73e8 !important;
+  border-radius: 100% !important;
+  width: 35px !important;
+  height: 35px !important;
+  color: #fff !important;
+  transition: all 0.2s ease;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background: #1557b0 !important;
+  transform: scale(1.05);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 16px !important;
+  font-weight: bold !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+/* Target SVG inside Swiper buttons - Fixed selector */
+.swiper-button-prev svg,
+.swiper-button-next svg {
+  width: 59% !important;
+  height: 59% !important;
+  object-fit: contain;
 }
 
-/* Hover effects */
-.hover\:scale-102:hover {
-  transform: scale(1.02);
+/* For Swiper using ::slotted or direct children */
+.swiper-button-prev > svg,
+.swiper-button-next > svg {
+  width: 59% !important;
+  height: 59% !important;
+}
+
+/* Alternative: If using slot-based SVG */
+::slotted(svg) {
+  width: 59% !important;
+  height: 59% !important;
+}
+
+/* Disabled state */
+.swiper-button-disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed;
+  pointer-events: none;
 }

@@ -7,13 +7,8 @@ import {
   LinkedInIcon,
   TwitterIcon,
   WhatsAppIcon,
-  YouTubeIcon,
-  InstagramIcon,
 } from "@/components/ui/Icon";
-
-interface ShareButtonProps {
-  activePage?: any;
-}
+import { ShareButtonProps } from "@/types/epaper";
 
 export function ShareButton({ activePage }: ShareButtonProps) {
   const [shareOpen, setShareOpen] = useState(false);
@@ -31,8 +26,6 @@ export function ShareButton({ activePage }: ShareButtonProps) {
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareTitle = activePage?.epaperTitle || "ই-পেপার";
-  const encodedUrl = encodeURIComponent(shareUrl);
-  const encodedText = encodeURIComponent(shareTitle);
 
   const handleCopy = () => {
     const url = window.location.href;
@@ -68,9 +61,7 @@ export function ShareButton({ activePage }: ShareButtonProps) {
     win.document.close();
   };
 
-  // Combined array with social icons + copy + print buttons
   const allButtons = [
-    // Social Media Icons
     {
       id: "facebook",
       icon: <FacebookIcon />,
@@ -118,7 +109,6 @@ export function ShareButton({ activePage }: ShareButtonProps) {
       isSocial: false,
       onClick: handleCopy,
     },
-    // Print Button
     {
       id: "print",
       icon: <Printer size={16} />,
@@ -135,7 +125,7 @@ export function ShareButton({ activePage }: ShareButtonProps) {
     <div className="relative" ref={shareRef}>
       <button
         onClick={() => setShareOpen((v) => !v)}
-        className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-sm border text-xs font-medium transition-all shadow-sm whitespace-nowrap active:scale-95 ${
+        className={`inline-flex items-center gap-1.5 px-5 py-[5px] border text-sm font-semibold transition-all shadow-sm whitespace-nowrap active:scale-95 ${
           shareOpen
             ? "bg-[#1A73E8] text-white border-[#1A73E8]"
             : "bg-white text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-200"
@@ -147,7 +137,7 @@ export function ShareButton({ activePage }: ShareButtonProps) {
 
       {shareOpen && (
         <div
-          className="absolute -right-24 top-full mt-2 bg-white rounded-md shadow-2xl border border-gray-100 py-4 px-4 z-[9999] w-[280px]"
+          className="absolute -right-24 top-full  bg-white rounded-sm shadow-2xl border border-gray-100 py-2 px-4 z-[9999] w-[300px]"
           onMouseDown={(e) => e.stopPropagation()}
         >
           <div className="flex gap-x-4 justify-between items-center">
