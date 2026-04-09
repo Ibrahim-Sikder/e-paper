@@ -7,6 +7,8 @@ import {
   LinkedInIcon,
   TwitterIcon,
   WhatsAppIcon,
+  YouTubeIcon,
+  InstagramIcon,
 } from "@/components/ui/Icon";
 
 interface ShareButtonProps {
@@ -31,37 +33,6 @@ export function ShareButton({ activePage }: ShareButtonProps) {
   const shareTitle = activePage?.epaperTitle || "ই-পেপার";
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedText = encodeURIComponent(shareTitle);
-
-  const socialLinks = [
-    {
-      name: "Facebook",
-      icon: <FacebookIcon />,
-      bg: "#1877F2",
-      url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-    },
-    {
-      name: "Twitter",
-      icon: <TwitterIcon />,
-      bg: "#000000",
-      url: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`,
-    },
-    {
-      name: "LinkedIn",
-      icon: <LinkedInIcon />,
-      bg: "#0A66C2",
-      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-    },
-    {
-      name: "WhatsApp",
-      icon: <WhatsAppIcon />,
-      bg: "#25D366",
-      url: `https://wa.me/?text=${encodeURIComponent(shareTitle + " " + shareUrl)}`,
-    },
-  ];
-
-  const handleSocialShare = (url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
-  };
 
   const handleCopy = () => {
     const url = window.location.href;
@@ -97,84 +68,106 @@ export function ShareButton({ activePage }: ShareButtonProps) {
     win.document.close();
   };
 
+  // Combined array with social icons + copy + print buttons
+  const allButtons = [
+    // Social Media Icons
+    {
+      id: "facebook",
+      icon: <FacebookIcon />,
+      bg: "#1877F2",
+      isSocial: true,
+      onClick: () => {
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+      },
+    },
+    {
+      id: "twitter",
+      icon: <TwitterIcon />,
+      bg: "#000000",
+      isSocial: true,
+      onClick: () => {
+        const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`;
+        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+      },
+    },
+    {
+      id: "linkedin",
+      icon: <LinkedInIcon />,
+      bg: "#0A66C2",
+      isSocial: true,
+      onClick: () => {
+        const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+      },
+    },
+    {
+      id: "whatsapp",
+      icon: <WhatsAppIcon />,
+      bg: "#25D366",
+      isSocial: true,
+      onClick: () => {
+        const url = `https://wa.me/?text=${encodeURIComponent(shareTitle + " " + shareUrl)}`;
+        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+      },
+    },
+    {
+      id: "copy",
+      icon: <Copy size={16} />,
+      bg: "#6B7280",
+      isSocial: false,
+      onClick: handleCopy,
+    },
+    // Print Button
+    {
+      id: "print",
+      icon: <Printer size={16} />,
+      bg: "#4B5563",
+      isSocial: false,
+      onClick: () => {
+        handlePrint();
+        setShareOpen(false);
+      },
+    },
+  ];
+
   return (
     <div className="relative" ref={shareRef}>
       <button
         onClick={() => setShareOpen((v) => !v)}
-        className={`inline-flex items-center gap-1.5 px-5 py-[7px] rounded-sm border text-xs font-medium transition-all shadow-sm whitespace-nowrap active:scale-95 ${
+        className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-sm border text-xs font-medium transition-all shadow-sm whitespace-nowrap active:scale-95 ${
           shareOpen
             ? "bg-[#1A73E8] text-white border-[#1A73E8]"
             : "bg-white text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-200"
         }`}
       >
-        <Share2 className="w-3.5 h-3.5" />
+        <Share2 className="w-3 h-3" />
         শেয়ার
       </button>
 
       {shareOpen && (
         <div
-          className="absolute right-0 top-full mt-2 bg-white rounded-sm shadow-2xl border border-gray-100 py-4 px-5 z-[9999] w-[220px]"
+          className="absolute -right-24 top-full mt-2 bg-white rounded-md shadow-2xl border border-gray-100 py-4 px-4 z-[9999] w-[280px]"
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-semibold text-gray-800">
-              শেয়ার করুন
-            </span>
-            <button
-              onClick={() => setShareOpen(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X size={15} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-4 gap-2 mb-2">
-            {socialLinks.map((s) => (
+          <div className="flex gap-x-4 justify-between items-center">
+            {allButtons.map((btn) => (
               <button
-                key={s.name}
-                title={s.name}
+                key={btn.id}
                 onClick={() => {
-                  handleSocialShare(s.url);
-                  setShareOpen(false);
+                  btn.onClick();
+                  if (!btn.isSocial) {
+                    if (btn.id === "print") setShareOpen(false);
+                  }
                 }}
-                className="rounded-xl p-2.5 flex items-center justify-center text-white hover:opacity-85 active:scale-95 transition-all"
-                style={{ backgroundColor: s.bg }}
+                className="flex flex-col items-center justify-center gap-2 p-2 rounded-full transition-all active:scale-95 hover:opacity-90 hover:scale-105"
+                style={{ backgroundColor: btn.bg }}
               >
-                {s.icon}
+                <span className="text-white flex items-center justify-center w-4 h-4">
+                  {btn.icon}
+                </span>
               </button>
             ))}
-          </div>
-          <div className="grid grid-cols-4 gap-2 mb-3">
-            {socialLinks.map((s) => (
-              <span
-                key={s.name + "-label"}
-                className="text-[9px] text-center text-gray-400"
-              >
-                {s.name}
-              </span>
-            ))}
-          </div>
-
-          <div className="border-t border-gray-100 pt-3 space-y-1.5">
-            <button
-              onClick={handleCopy}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              <Copy size={14} className="text-gray-500" />
-              <span className="text-gray-700">
-                {copied ? "✅ কপি হয়েছে!" : "লিংক কপি করুন"}
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                handlePrint();
-                setShareOpen(false);
-              }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              <Printer size={14} className="text-gray-500" />
-              <span className="text-gray-700">প্রিন্ট করুন</span>
-            </button>
           </div>
         </div>
       )}

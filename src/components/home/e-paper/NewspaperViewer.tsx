@@ -1,19 +1,21 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
-  useEpaperData,
-  useAvailableDates,
   EpaperPage,
+  useAvailableDates,
+  useEpaperData,
 } from "@/hooks/useEpaperData";
+import FullPageImageViewer from "./FullPageImageViewer";
 import LeftThumbnailList from "./LeftThumbnailList";
 import MiddleSwiperWithOverlay from "./MiddleSwiperWithOverlay";
-import RightArticlePanel from "./RightArticlePanel";
 import NewsTopBar from "./NewsTopBar";
+import RightArticlePanel from "./RightArticlePanel";
 
 export default function NewspaperViewer() {
   const router = useRouter();
@@ -36,6 +38,7 @@ export default function NewspaperViewer() {
   const [viewMode, setViewMode] = useState<"image" | "text" | "fullpage">(
     "image",
   );
+  const [fullPageImage, setFullPageImage] = useState<EpaperPage | null>(null);
   const swiperRef = useRef<any>(null);
 
   const pages = data?.pages || [];
@@ -115,13 +118,23 @@ export default function NewspaperViewer() {
 
   const handleViewModeChange = useCallback(
     (mode: "image" | "text" | "fullpage") => {
-      setViewMode(mode);
+      if (mode === "fullpage" && displayActivePage) {
+        setFullPageImage(displayActivePage);
+      } else {
+        setFullPageImage(null);
+        setViewMode(mode);
+      }
     },
-    [],
+    [displayActivePage],
   );
 
   const handleArticleClick = useCallback((article: any) => {
     setSelectedArticle(article);
+  }, []);
+
+  const handleCloseFullPage = useCallback(() => {
+    setFullPageImage(null);
+    setViewMode("image");
   }, []);
 
   if (loading) {
@@ -216,13 +229,6 @@ export default function NewspaperViewer() {
         currentEdition={urlEdition || displayActivePage?.edition}
       />
 
-      {viewMode === "fullpage" && displayActivePage && (
-        <FullPageModal
-          page={displayActivePage}
-          onClose={() => setViewMode("image")}
-        />
-      )}
-
       <div className="max-w-[1400px] mx-auto px-4 py-4">
         <div className="flex gap-4">
           <div className="w-[120px] flex-shrink-0">
@@ -259,38 +265,14 @@ export default function NewspaperViewer() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
 
-function FullPageModal({
-  page,
-  onClose,
-}: {
-  page: EpaperPage;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-      onClick={onClose}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 text-white bg-white/20 hover:bg-white/40 rounded-full w-10 h-10 flex items-center justify-center text-xl transition-all z-10"
-      >
-        ✕
-      </button>
-      <div
-        className="max-w-5xl w-full max-h-screen overflow-y-auto px-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <img
-          src={page.image}
-          alt={`Page ${page.pageNumber}`}
-          className="w-full h-auto rounded-lg shadow-2xl"
+      {/* Full Page Image Viewer */}
+      {fullPageImage && (
+        <FullPageImageViewer
+          page={fullPageImage}
+          onClose={handleCloseFullPage}
         />
-      </div>
+      )}
     </div>
   );
 }
