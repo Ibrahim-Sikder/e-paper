@@ -16,12 +16,14 @@ import LeftThumbnailList from "./LeftThumbnailList";
 import MiddleSwiperWithOverlay from "./MiddleSwiperWithOverlay";
 import NewsTopBar from "./NewsTopBar";
 import RightArticlePanel from "./RightArticlePanel";
+import OGMetaTags from "@/components/OGMetaTags";
 
 export default function NewspaperViewer() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
+  const currentPageUrl =
+    typeof window !== "undefined" ? window.location.href : "";
   const urlDate = searchParams.get("date") || undefined;
   const urlEdition = searchParams.get("edition") || undefined;
 
@@ -213,66 +215,81 @@ export default function NewspaperViewer() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <NewsTopBar
-        pages={displayPages}
-        activeIndex={displayActiveIndex}
-        viewMode={viewMode}
-        activePage={displayActivePage}
-        onPageChange={handleTopBarPageChange}
-        onViewModeChange={handleViewModeChange}
-        onDateChange={handleDateChange}
-        onEditionChange={handleEditionChange}
-        availableDates={availableDates}
-        availableEditions={availableEditions}
-        currentDate={urlDate || displayActivePage?.epaperDate}
-        currentEdition={urlEdition || displayActivePage?.edition}
+    <>
+      <OGMetaTags
+        title={
+          displayActivePage
+            ? `${displayActivePage.epaperTitle} - পৃষ্ঠা ${displayActivePage.pageNumber + 1} | ই-পেপার`
+            : "ই-পেপার"
+        }
+        description={
+          displayActivePage?.articles?.[0]?.content?.substring(0, 200) ||
+          `${displayActivePage?.epaperTitle || "ই-পেপার"} - ${displayActivePage?.epaperDate || ""} তারিখের ই-পেপার`
+        }
+        image={displayActivePage?.image || "/default-og-image.jpg"}
+        url={currentPageUrl}
       />
+      <div className="bg-gray-50 min-h-screen">
+        <NewsTopBar
+          pages={displayPages}
+          activeIndex={displayActiveIndex}
+          viewMode={viewMode}
+          activePage={displayActivePage}
+          onPageChange={handleTopBarPageChange}
+          onViewModeChange={handleViewModeChange}
+          onDateChange={handleDateChange}
+          onEditionChange={handleEditionChange}
+          availableDates={availableDates}
+          availableEditions={availableEditions}
+          currentDate={urlDate || displayActivePage?.epaperDate}
+          currentEdition={urlEdition || displayActivePage?.edition}
+        />
 
-      <div className="max-w-[1400px] mx-auto px-4 py-4">
-        <div className="flex gap-4">
-          <div className="w-[120px] flex-shrink-0">
-            <h5 className="bg-[#1A73E8] text-white px-1 py-1 rounded text-xs text-center mb-2">
-              সকল পাতা
-            </h5>
-            <LeftThumbnailList
-              pages={displayPages}
-              activeIndex={displayActiveIndex}
-              onPageSelect={handlePageSelect}
-            />
-          </div>
-          <div className="flex-1">
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-5">
-                <MiddleSwiperWithOverlay
-                  pages={displayPages}
-                  initialIndex={displayActiveIndex}
-                  onArticleClick={handleArticleClick}
-                  onSlideChange={handleSlideChange}
-                  swiperRef={swiperRef}
-                />
-              </div>
+        <div className="max-w-[1400px] mx-auto px-4 py-4">
+          <div className="flex gap-4">
+            <div className="w-[120px] flex-shrink-0">
+              <h5 className="bg-[#1A73E8] text-white px-1 py-1 rounded text-xs text-center mb-2">
+                সকল পাতা
+              </h5>
+              <LeftThumbnailList
+                pages={displayPages}
+                activeIndex={displayActiveIndex}
+                onPageSelect={handlePageSelect}
+              />
+            </div>
+            <div className="flex-1">
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-5">
+                  <MiddleSwiperWithOverlay
+                    pages={displayPages}
+                    initialIndex={displayActiveIndex}
+                    onArticleClick={handleArticleClick}
+                    onSlideChange={handleSlideChange}
+                    swiperRef={swiperRef}
+                  />
+                </div>
 
-              <div className="col-span-7">
-                <RightArticlePanel
-                  selectedArticle={selectedArticle}
-                  selectedPage={displayActivePage}
-                  viewMode={viewMode}
-                  footerInfo={data?.footerInfo}
-                />
+                <div className="col-span-7">
+                  <RightArticlePanel
+                    selectedArticle={selectedArticle}
+                    selectedPage={displayActivePage}
+                    viewMode={viewMode}
+                    footerInfo={data?.footerInfo}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Full Page Image Viewer */}
-      {fullPageImage && (
-        <FullPageImageViewer
-          page={fullPageImage}
-          onClose={handleCloseFullPage}
-        />
-      )}
-    </div>
+        {/* Full Page Image Viewer */}
+        {fullPageImage && (
+          <FullPageImageViewer
+            page={fullPageImage}
+            onClose={handleCloseFullPage}
+          />
+        )}
+      </div>
+    </>
   );
 }

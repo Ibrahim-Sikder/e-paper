@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Share2, X, Copy, Printer } from "lucide-react";
+import { Share2, Copy, Printer } from "lucide-react";
 import {
   FacebookIcon,
   LinkedInIcon,
@@ -26,6 +26,8 @@ export function ShareButton({ activePage }: ShareButtonProps) {
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareTitle = activePage?.epaperTitle || "ই-পেপার";
+  const shareImage = activePage?.image || "";
+  const shareDescription = `${shareTitle} - পৃষ্ঠা ${activePage?.pageNumber || 1} | ${activePage?.epaperDate || ""}`;
 
   const handleCopy = () => {
     const url = window.location.href;
@@ -61,46 +63,60 @@ export function ShareButton({ activePage }: ShareButtonProps) {
     win.document.close();
   };
 
+  // Facebook share with image
+  const shareOnFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+  };
+
+  // Twitter/X share with image (Twitter will fetch OG meta tags)
+  const shareOnTwitter = () => {
+    const text = `${shareTitle} - পৃষ্ঠা ${activePage?.pageNumber || 1}`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+  };
+
+  // LinkedIn share
+  const shareOnLinkedIn = () => {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+  };
+
+  // WhatsApp share with image preview
+  const shareOnWhatsApp = () => {
+    const text = `${shareTitle}\nপৃষ্ঠা: ${activePage?.pageNumber || 1}\nতারিখ: ${activePage?.epaperDate || ""}\n\n${shareUrl}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
+  };
+
   const allButtons = [
     {
       id: "facebook",
       icon: <FacebookIcon />,
       bg: "#1877F2",
       isSocial: true,
-      onClick: () => {
-        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
-      },
+      onClick: shareOnFacebook,
     },
     {
       id: "twitter",
       icon: <TwitterIcon />,
       bg: "#000000",
       isSocial: true,
-      onClick: () => {
-        const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`;
-        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
-      },
+      onClick: shareOnTwitter,
     },
     {
       id: "linkedin",
       icon: <LinkedInIcon />,
       bg: "#0A66C2",
       isSocial: true,
-      onClick: () => {
-        const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
-      },
+      onClick: shareOnLinkedIn,
     },
     {
       id: "whatsapp",
       icon: <WhatsAppIcon />,
       bg: "#25D366",
       isSocial: true,
-      onClick: () => {
-        const url = `https://wa.me/?text=${encodeURIComponent(shareTitle + " " + shareUrl)}`;
-        window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
-      },
+      onClick: shareOnWhatsApp,
     },
     {
       id: "copy",
@@ -137,7 +153,7 @@ export function ShareButton({ activePage }: ShareButtonProps) {
 
       {shareOpen && (
         <div
-          className="absolute -right-24 top-full  bg-white rounded-sm shadow-2xl border border-gray-100 py-2 px-4 z-[9999] w-[300px]"
+          className="absolute -right-24 top-full mt-2 bg-white rounded-sm shadow-2xl border border-gray-100 py-2 px-4 z-[9999] w-[300px]"
           onMouseDown={(e) => e.stopPropagation()}
         >
           <div className="flex gap-x-4 justify-between items-center">
