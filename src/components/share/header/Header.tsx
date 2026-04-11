@@ -6,18 +6,66 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   categorySlugMap,
-  mainNavLinks,
+  mainNavLinks as staticMainNavLinks,
   mediaLinks,
-  megaMenuColumns,
+  megaMenuColumns as staticMegaMenuColumns,
   topNavLinks,
 } from "./Menu";
 import TopBar from "./TopBar";
+import { useCategoryData } from "@/hooks/useCategoryData";
+import { sortByDate } from "@/utils/sort";
+
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const megaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { categoryData, loading, error } = useCategoryData({});
+  const sortCategoryData = sortByDate(categoryData, "updatedAt");
+
+  // Dynamically generate mainNavLinks from category data
+  const dynamicMainNavLinks = sortCategoryData.map((cat: Category) => cat.name);
+
+  // Use dynamic data if available, otherwise fallback to static
+  const mainNavLinks =
+    dynamicMainNavLinks.length > 0 ? dynamicMainNavLinks : staticMainNavLinks;
+
+  // Dynamically generate megaMenuColumns from category data
+  const generateDynamicMegaMenuColumns = () => {
+    if (sortCategoryData.length === 0) return staticMegaMenuColumns;
+
+    // Create a 7-column layout with categories distributed evenly
+    const columns: string[][] = [[], [], [], [], [], [], []];
+    sortCategoryData.forEach((cat: Category, index: number) => {
+      const columnIndex = index % 7;
+      columns[columnIndex].push(cat.name);
+    });
+
+    // Filter out empty columns
+    return columns.filter((col) => col.length > 0);
+  };
+
+  const dynamicMegaMenuColumns = generateDynamicMegaMenuColumns();
+
+  // Create dynamic category slug map from backend data
+  const dynamicCategorySlugMap: Record<string, string> = {};
+  sortCategoryData.forEach((cat: Category) => {
+    dynamicCategorySlugMap[cat.name] = cat.slug;
+  });
+
+  // Merge static and dynamic maps (dynamic takes precedence)
+  const mergedCategorySlugMap = {
+    ...categorySlugMap,
+    ...dynamicCategorySlugMap,
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -29,8 +77,34 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  console.log("Dynamic Categories from Backend:", sortCategoryData);
+  console.log("Dynamic Main Nav Links:", mainNavLinks);
+
   const handleNavClick = (label: string) => {
-    const slug = categorySlugMap[label] || label.toLowerCase();
+    const slug = mergedCategorySlugMap[label] || label.toLowerCase();
     router.push(`/${slug}`);
   };
 
@@ -74,19 +148,34 @@ export default function Header() {
 
       <div className="bg-white font-bold">
         <div className="max-w-5xl mx-auto px-4 flex items-center h-[44px]">
+          {/* ── Mobile: hamburger on the LEFT ── */}
+          <button
+            className="md:hidden text-gray-700 hover:text-red-600 transition-colors mr-3 flex-shrink-0"
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            aria-label="Toggle mobile menu"
+          >
+            {mobileMenuOpen ? (
+              <X size={22} strokeWidth={2} />
+            ) : (
+              <Menu size={22} strokeWidth={2} />
+            )}
+          </button>
+
+          {/* Home icon — always visible */}
           <a
             href="/"
-            className="mr-5 text-gray-700 hover:text-red-600 transition-colors"
+            className="mr-5 text-gray-700 hover:text-red-600 transition-colors flex-shrink-0"
             aria-label="Home"
           >
             <Home size={18} strokeWidth={2} />
           </a>
 
-          <div className="h-5 w-px bg-gray-300 mr-5" />
+          <div className="hidden md:block h-5 w-px bg-gray-300 mr-5 flex-shrink-0" />
 
-          <nav className="flex items-center gap-x-4 flex-1 overflow-x-auto scrollbar-none">
-            {mainNavLinks.map((label, i) => {
-              const slug = categorySlugMap[label] || label.toLowerCase();
+          {/* Desktop nav — hidden on mobile */}
+          <nav className="hidden md:flex items-center gap-x-4 flex-1 overflow-x-auto scrollbar-none">
+            {mainNavLinks.slice(0, 9).map((label, i) => {
+              const slug = mergedCategorySlugMap[label] || label.toLowerCase();
               return (
                 <a
                   key={i}
@@ -104,8 +193,11 @@ export default function Header() {
             })}
           </nav>
 
-          {/* Hamburger */}
-          <div className="relative ml-4" ref={megaRef}>
+          {/* Spacer on mobile to push mega-menu icon to right */}
+          <div className="flex-1 md:hidden" />
+
+          {/* Mega-menu hamburger — always visible on ALL devices */}
+          <div className="relative ml-4 flex-shrink-0" ref={megaRef}>
             <button
               className="text-gray-700 hover:text-red-600 transition-colors cursor-pointer"
               onClick={() => setMegaMenuOpen((v) => !v)}
@@ -121,18 +213,22 @@ export default function Header() {
             {megaMenuOpen && (
               <div
                 className="absolute right-0 top-full mt-2 z-[9999] bg-white border border-gray-200 shadow-2xl rounded-sm"
-                style={{ width: "1200px", maxWidth: "95vw" }}
+                style={{ width: "min(1200px, 95vw)" }}
               >
                 <div className="px-5 py-2 border-b border-gray-100 text-[12px] text-gray-500 font-normal">
                   {todayBn}
                 </div>
 
-                <div className="px-5 py-4 grid grid-cols-7 gap-x-5 gap-y-0 border-b border-gray-100">
-                  {megaMenuColumns.map((col, ci) => (
+                {/* Mega menu grid — responsive columns */}
+                <div className="px-5 py-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-3 border-b border-gray-100">
+                  {(dynamicMegaMenuColumns.length > 0
+                    ? dynamicMegaMenuColumns
+                    : staticMegaMenuColumns
+                  ).map((col, ci) => (
                     <div key={ci} className="flex flex-col gap-y-2">
                       {col.map((label) => {
                         const slug =
-                          categorySlugMap[label] || label.toLowerCase();
+                          mergedCategorySlugMap[label] || label.toLowerCase();
                         const isFirst = ci === 0 && label === col[0];
                         return (
                           <a
@@ -143,7 +239,7 @@ export default function Header() {
                               setMegaMenuOpen(false);
                               router.push(`/${slug}`);
                             }}
-                            className={`text-[16px] whitespace-nowrap transition-colors hover:text-red-600 ${
+                            className={`text-[15px] whitespace-nowrap transition-colors hover:text-red-600 ${
                               isFirst
                                 ? "font-bold text-gray-900"
                                 : "text-gray-800 font-semibold"
@@ -156,7 +252,8 @@ export default function Header() {
                     </div>
                   ))}
                 </div>
-                <div className="px-5 py-3 flex items-center gap-6">
+
+                <div className="px-5 py-3 flex flex-wrap items-center gap-4">
                   {mediaLinks.map((m) => (
                     <a
                       key={m.label}
@@ -185,9 +282,9 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Dropdown  */}
+      {/* ── Mobile slide-down menu ── */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white shadow-md">
+        <div className="md:hidden border-t border-gray-200 bg-white shadow-md max-h-[80vh] overflow-y-auto">
           <div className="px-4 py-3 flex flex-col gap-2">
             {topNavLinks.map((link, i) => (
               <a
@@ -205,7 +302,7 @@ export default function Header() {
             ))}
             <hr className="border-gray-200 my-1" />
             {mainNavLinks.map((label, i) => {
-              const slug = categorySlugMap[label] || label.toLowerCase();
+              const slug = mergedCategorySlugMap[label] || label.toLowerCase();
               return (
                 <a
                   key={i}
@@ -215,7 +312,7 @@ export default function Header() {
                     setMobileMenuOpen(false);
                     router.push(`/${slug}`);
                   }}
-                  className="text-[14px] text-gray-800 hover:text-red-600 py-1"
+                  className="text-[14px] text-gray-800 hover:text-red-600 py-1 font-semibold border-b border-gray-100 last:border-0"
                 >
                   {label}
                 </a>
